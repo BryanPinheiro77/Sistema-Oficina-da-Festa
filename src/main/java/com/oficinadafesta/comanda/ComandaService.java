@@ -1,11 +1,14 @@
 package com.oficinadafesta.comanda;
 
 import com.oficinadafesta.dto.PagamentoComandaDTO;
+import com.oficinadafesta.pedido.Pedido;
+import com.oficinadafesta.pedido.PedidoRepository;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
+import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -13,6 +16,7 @@ import java.util.Optional;
 public class ComandaService {
 
     private final ComandaRepository comandaRepository;
+    private final PedidoRepository pedidoRepository;
 
     // ✅ Ativa a próxima comanda disponível
     public Comanda ativarProximaComanda() {
@@ -71,4 +75,24 @@ public class ComandaService {
 
         comandaRepository.save(comanda);
     }
+
+    public Comanda fecharComanda(String codigo) {
+        Comanda comanda = comandaRepository.findByCodigo(codigo)
+                .orElseThrow(() -> new RuntimeException("Comanda não encontrada"));
+
+        comanda.setPaga(true);
+        comanda.setBloqueada(false);
+
+        List<Pedido> pedidos = comanda.getPedidos();
+
+        for (Pedido pedido : pedidos) {
+            pedido.setComanda(null);
+            pedidoRepository.save(pedido);
+        }
+
+        comanda.getPedidos().clear();
+
+        return comandaRepository.save(comanda);
+    }
+
 }

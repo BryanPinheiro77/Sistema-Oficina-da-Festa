@@ -70,7 +70,7 @@ public class ComandaController {
 
     @PostMapping("/{codigo}/fechar")
     public void fecharComanda(@PathVariable String codigo){
-        comandaService.marcarComoPaga(codigo);
+        comandaService.fecharComanda(codigo);
     }
 
     @PostMapping("/caixa/{codigo}/pagar")
