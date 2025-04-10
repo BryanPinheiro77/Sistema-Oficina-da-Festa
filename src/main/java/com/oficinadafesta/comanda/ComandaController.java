@@ -1,6 +1,7 @@
 package com.oficinadafesta.comanda;
 
 
+import com.oficinadafesta.dto.ComandaDetalhadaResponseDTO;
 import com.oficinadafesta.dto.ComandaResponseDTO;
 import com.oficinadafesta.dto.PagamentoComandaDTO;
 import lombok.RequiredArgsConstructor;
@@ -76,5 +77,10 @@ public class ComandaController {
     @PostMapping("/caixa/{codigo}/pagar")
     public void pagarComanda(@PathVariable String codigo, @RequestBody PagamentoComandaDTO dto){
         comandaService.pagarComanda(codigo, dto);
+    }
+
+    @GetMapping("/{codigo}")
+    public ComandaDetalhadaResponseDTO buscarDetalhesComanda(@PathVariable String codigo){
+        return comandaService.buscarComandaCompleta(codigo);
     }
 }

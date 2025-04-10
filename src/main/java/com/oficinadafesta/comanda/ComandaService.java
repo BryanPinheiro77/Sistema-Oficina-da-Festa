@@ -1,5 +1,6 @@
 package com.oficinadafesta.comanda;
 
+import com.oficinadafesta.dto.ComandaDetalhadaResponseDTO;
 import com.oficinadafesta.dto.PagamentoComandaDTO;
 import com.oficinadafesta.pedido.Pedido;
 import com.oficinadafesta.pedido.PedidoRepository;
@@ -10,6 +11,7 @@ import org.springframework.stereotype.Service;
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -95,4 +97,33 @@ public class ComandaService {
         return comandaRepository.save(comanda);
     }
 
+    public ComandaDetalhadaResponseDTO buscarComandaCompleta(String codigo){
+        Comanda comanda = comandaRepository.findByCodigo(codigo)
+                .orElseThrow(() -> new RuntimeException("Comanda não encontrada"));
+
+        ComandaDetalhadaResponseDTO dto = new ComandaDetalhadaResponseDTO();
+        dto.setCodigo(comanda.getCodigo());
+        dto.setPaga(comanda.isPaga());
+        dto.setTotal(comanda.getValorTotal());
+
+        List<ComandaDetalhadaResponseDTO.PedidoDTO> pedidos = comanda.getPedidos().stream().map(p -> {
+            ComandaDetalhadaResponseDTO.PedidoDTO pedidoDTO = new ComandaDetalhadaResponseDTO.PedidoDTO();
+            pedidoDTO.setId(p.getId());
+            pedidoDTO.setFormaPagamento(p.getFormaPagamento().name());
+
+            List<ComandaDetalhadaResponseDTO.ItemDTO> itens = p.getItens().stream().map(i -> {
+                ComandaDetalhadaResponseDTO.ItemDTO itemDTO = new ComandaDetalhadaResponseDTO.ItemDTO();
+                itemDTO.setNomeProduto(i.getProduto().getNome());
+                itemDTO.setQuantidade(i.getQuantidade());
+                itemDTO.setPreco(i.getProduto().getPreco());
+                itemDTO.setStatus(i.getStatus().name());
+                return itemDTO;
+            }).collect(Collectors.toList());
+
+            pedidoDTO.setItens(itens);
+            return pedidoDTO;
+        }).collect(Collectors.toList());
+
+        return dto;
+    }
 }
