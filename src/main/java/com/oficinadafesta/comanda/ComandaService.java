@@ -73,8 +73,13 @@ public class ComandaService {
         comanda.setAtiva(false);
         comanda.setBloqueada(false);
 
-        comanda.getPedidos().clear();
+        List<Pedido> pedidos = comanda.getPedidos();
+        for (Pedido pedido : pedidos) {
+            pedido.setComanda(null);
+            pedidoRepository.save(pedido);
+        }
 
+        comanda.getPedidos().clear();
         comandaRepository.save(comanda);
     }
 
