@@ -4,10 +4,7 @@ import com.oficinadafesta.cliente.Cliente;
 import com.oficinadafesta.cliente.ClienteRepository;
 import com.oficinadafesta.comanda.Comanda;
 import com.oficinadafesta.comanda.ComandaRepository;
-import com.oficinadafesta.dto.ItemPedidoDTO;
-import com.oficinadafesta.dto.PedidoCaixaDTO;
-import com.oficinadafesta.dto.PedidoRequestDTO;
-import com.oficinadafesta.dto.PedidoSetorResponseDTO;
+import com.oficinadafesta.dto.*;
 import com.oficinadafesta.enums.*;
 import com.oficinadafesta.produto.Produto;
 import com.oficinadafesta.produto.ProdutoRepository;
@@ -230,6 +227,53 @@ public class PedidoService {
         comandaRepository.save(comanda);
     }
 
+public PedidoResumoDTO adicionarPedidoCafe(String codigoComanda, AdicionarPedidoCafeDTO dto){
+        Comanda comanda = comandaRepository.findByCodigo(codigoComanda)
+                .orElseThrow(() -> new RuntimeException("Comanda não encontrada"));
 
+        Pedido pedido = new Pedido();
+        pedido.setCriadoEm(LocalDateTime.now());
+        pedido.setFormaPagamento(FormaPagamento.NA_COMANDA);
+        pedido.setParaEntrega(false);
+        pedido.setValorPago(BigDecimal.ZERO);
+        pedido.setComanda(comanda);
+
+        BigDecimal valorTotal = BigDecimal.ZERO;
+        List<ItemPedido> itens = new ArrayList<>();
+        List<PedidoResumoDTO.ItemResumoDTO> itensResumo = new ArrayList<>();
+
+        for (AdicionarPedidoCafeDTO.ItemPedidoDTO ItemDTO : dto.getItens()) {
+            Produto produto = produtoRepository.findById(ItemDTO.getProdutoId())
+            .orElseThrow(() -> new RuntimeException("Produto não encontrado"));
+
+        ItemPedido item = new ItemPedido();
+        item.setProduto(produto);
+        item.setQuantidade(ItemDTO.getQuantidade());
+        item.setStatus(StatusItemPedido.PRONTO);
+        item.setPedido(pedido);
+
+        BigDecimal subtotal = produto.getPreco().multiply(BigDecimal.valueOf(ItemDTO.getQuantidade()));
+        valorTotal = valorTotal.add(subtotal);
+        itens.add(item);
+
+        PedidoResumoDTO.ItemResumoDTO resumoItem = new PedidoResumoDTO.ItemResumoDTO();
+        resumoItem.setNomeProduto(produto.getNome());
+        resumoItem.setQuantidade(ItemDTO.getQuantidade());
+        resumoItem.setPrecoUnitario(produto.getPreco());
+        resumoItem.setSubtotal(subtotal);
+        itensResumo.add(resumoItem);
+        }
+
+        pedido.setValorTotal(valorTotal);
+        pedido.setItens(itens);
+        pedidoRepository.save(pedido);
+
+        PedidoResumoDTO resumo = new PedidoResumoDTO();
+        resumo.setCodigoComanda(codigoComanda);
+        resumo.setValorTotal(valorTotal);
+        resumo.setItens(itensResumo);
+
+        return resumo;
+}
 }
 

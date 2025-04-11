@@ -1,9 +1,6 @@
 package com.oficinadafesta.pedido;
 
-import com.oficinadafesta.dto.ItensPorSetorResponseDTO;
-import com.oficinadafesta.dto.PedidoCaixaDTO;
-import com.oficinadafesta.dto.PedidoRequestDTO;
-import com.oficinadafesta.dto.PedidoSetorResponseDTO;
+import com.oficinadafesta.dto.*;
 import com.oficinadafesta.enums.AreaTipo;
 import com.oficinadafesta.enums.StatusItemPedido;
 import com.oficinadafesta.enums.StatusPedido;
@@ -81,5 +78,11 @@ public class PedidoController {
     public ResponseEntity<?> criarPedidoNoCaixa(@RequestBody PedidoCaixaDTO dto){
         pedidoService.criarPedidoNoCaixa(dto);
         return ResponseEntity.ok("Pedido criado com sucesso");
+    }
+
+    @PostMapping("cafe/comandas/{codigo}/adicionar")
+    public ResponseEntity<PedidoResumoDTO> adicionarPedidoCafe(@PathVariable String codigo, @RequestBody AdicionarPedidoCafeDTO dto){
+        PedidoResumoDTO resumo = pedidoService.adicionarPedidoCafe(codigo, dto);
+        return ResponseEntity.ok(resumo);
     }
 }
