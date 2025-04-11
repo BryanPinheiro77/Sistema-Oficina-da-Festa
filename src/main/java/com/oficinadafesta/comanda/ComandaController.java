@@ -19,8 +19,8 @@ public class ComandaController {
         return comandaService.ativarProximaComanda();
     }
 
-    @GetMapping("/{codigo}")
-    public ComandaResponseDTO getDetalhesComanda(@PathVariable String codigo){
+    @GetMapping("/{codigo}/resumo")
+    public ComandaResponseDTO getResumoComanda(@PathVariable String codigo){
         Comanda comanda = comandaService.buscarPorcodigo(codigo);
         ComandaResponseDTO dto = new ComandaResponseDTO();
 

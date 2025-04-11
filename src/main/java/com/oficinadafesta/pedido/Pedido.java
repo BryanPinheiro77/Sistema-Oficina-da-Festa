@@ -1,5 +1,6 @@
 package com.oficinadafesta.pedido;
 
+import com.oficinadafesta.pedido.ItemPedido;
 import com.oficinadafesta.cliente.Cliente;
 import com.oficinadafesta.comanda.Comanda;
 import com.oficinadafesta.enums.FormaPagamento;
@@ -55,7 +56,7 @@ public class Pedido {
         if (itens != null) {
             for (ItemPedido item : itens) {
                 // Supondo que o preço do produto esteja em double, convertemos:
-                BigDecimal preco = BigDecimal.valueOf(item.getProduto().getPreco());
+                BigDecimal preco = item.getProduto().getPreco();
                 BigDecimal quantidade = BigDecimal.valueOf(item.getQuantidade());
                 total = total.add(preco.multiply(quantidade));
             }
