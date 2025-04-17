@@ -55,38 +55,43 @@ public class LoginController {
     private void redirecionarParaTelaPorSetor(AreaTipo setor) {
         try {
             Parent root = null;
-
+            // Definindo o caminho do FXML com base no setor
+            String fxmlPath = "";
             switch (setor) {
                 case COMUNICACAO:
-                    root = springFXMLLoader.load("/fxml/comunicacaoScreen.fxml");
+                    fxmlPath = "com/oficinadafesta/login/comunicacaoScreen.fxml";
                     break;
                 case CAFE:
-                    root = springFXMLLoader.load("/fxml/cafeScreen.fxml");
+                    fxmlPath = "com/oficinadafesta/login/cafeScreen.fxml";
                     break;
                 case CONFEITARIA:
-                    root = springFXMLLoader.load("/fxml/confeitariaScreen.fxml");
+                    fxmlPath = "com/oficinadafesta/login/confeitariaScreen.fxml";
                     break;
                 case CAIXA:
-                    root = springFXMLLoader.load("/fxml/caixaScreen.fxml");
+                    fxmlPath = "com/oficinadafesta/login/caixaScreen.fxml";
                     break;
                 case PRODUCAO_DOCINHOS:
-                    root = springFXMLLoader.load("/fxml/docinhosScreen.fxml");
+                    fxmlPath = "com/oficinadafesta/login/docinhosScreen.fxml";
                     break;
                 case PRODUCAO_SALGADOS:
-                    root = springFXMLLoader.load("/fxml/salgadosScreen.fxml");
+                    fxmlPath = "com/oficinadafesta/login/salgadosScreen.fxml";
                     break;
                 case FRITURA:
-                    root = springFXMLLoader.load("/fxml/frituraScreen.fxml");
+                    fxmlPath = "com/oficinadafesta/login/frituraScreen.fxml";
                     break;
                 case SOBREMESAS:
-                    root = springFXMLLoader.load("/fxml/sobremesaScreen.fxml");
+                    fxmlPath = "com/oficinadafesta/login/sobremesaScreen.fxml";
                     break;
             }
 
-            if (root != null) {
-                Stage stage = (Stage) usuarioField.getScene().getWindow();
-                stage.setScene(new Scene(root));
-                stage.show();
+            // Carregando a tela
+            if (!fxmlPath.isEmpty()) {
+                root = springFXMLLoader.load(fxmlPath); // Usando o caminho correto
+                if (root != null) {
+                    Stage stage = (Stage) usuarioField.getScene().getWindow();
+                    stage.setScene(new Scene(root));
+                    stage.show();
+                }
             }
         } catch (Exception e) {
             e.printStackTrace();

@@ -10,8 +10,10 @@ import lombok.Data;
 import javafx.event.ActionEvent;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
+import org.springframework.stereotype.Component;
 
 @Data
+@Component
 public class CaixaController {
 
     //Aba novo pedido
