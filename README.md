@@ -65,23 +65,14 @@ git clone https://github.com/BryanPinheiro77/oficina-da-festa.git
 cd oficina-da-festa
 Crie o banco de dados MySQL:
 
-sql
-Copiar
-Editar
 CREATE DATABASE oficina_da_festa;
 Atualize o arquivo application.properties com suas credenciais:
 
-properties
-Copiar
-Editar
 spring.datasource.url=jdbc:mysql://localhost:3306/oficina_da_festa
 spring.datasource.username=seu_usuario
 spring.datasource.password=sua_senha
-Rode a aplicação:
 
-bash
-Copiar
-Editar
+Rode a aplicação:
 ./mvnw spring-boot:run
 ```
 
