@@ -4,7 +4,7 @@
 [![Spring Boot](https://img.shields.io/badge/Spring%20Boot-3.x-6DB33F?style=for-the-badge&logo=springboot&logoColor=white)](#)
 [![MySQL](https://img.shields.io/badge/MySQL-8.0-4479A1?style=for-the-badge&logo=mysql&logoColor=white)](#)
 [![JavaFX](https://img.shields.io/badge/JavaFX-UI-blue?style=for-the-badge&logo=java)](#)
-[![Status do Projeto](https://img.shields.io/badge/STATUS-EM%20DESENVOLVIMENTO-yellow?style=for-the-badge)](#)
+[![Status do Projeto](https://img.shields.io/badge/STATUS-CONCLUÍDO-33cc33?style=for-the-badge)](#)
 
 **Oficina da Festa** é um sistema de gestão completo desenvolvido para uma confeitaria local.  
 Ele organiza pedidos, produção por setor, comandas físicas, pagamentos e comunicação com os clientes.  
@@ -61,7 +61,7 @@ Criado para otimizar o fluxo entre os setores da confeitaria, melhorar o atendim
 1. Clone o repositório:
 
 ```bash
-git clone https://github.com/seu-usuario/oficina-da-festa.git
+git clone https://github.com/BryanPinheiro77/oficina-da-festa.git
 cd oficina-da-festa
 Crie o banco de dados MySQL:
 
