@@ -1,0 +1,111 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.text.*?>
+<?import javafx.collections.*?>
+<?import javafx.scene.control.cell.*?>
+<?import javafx.geometry.*?>
+<?import java.lang.String?>
+<?import javafx.geometry.Insets?>
+
+<AnchorPane xmlns="http://javafx.com/javafx"
+            xmlns:fx="http://javafx.com/fxml"
+            fx:controller="com.oficinadafesta.front.controller.CaixaController">
+
+    <TabPane layoutX="10" layoutY="10" prefWidth="780" prefHeight="580">
+        <!-- Aba Novo Pedido -->
+        <Tab text="Novo Pedido">
+            <AnchorPane>
+                <VBox spacing="10">
+                    <padding>
+                        <Insets top="10" right="10" bottom="10" left="10"/>
+                    </padding>
+
+                    <HBox spacing="5">
+                        <TextField fx:id="telefoneField" promptText="Telefone do cliente"/>
+                        <Button text="Buscar" onAction="#onBuscarCliente"/>
+                    </HBox>
+
+                    <TextField fx:id="nomeField" promptText="Nome do cliente"/>
+                    <TextField fx:id="cepField" promptText="CEP"/>
+                    <TextField fx:id="enderecoField" promptText="Endereço completo"/>
+
+                    <HBox spacing="5">
+                        <ComboBox fx:id="produtoComboBox" promptText="Selecionar produto"/>
+                        <TextField fx:id="quantidadeField" promptText="Qtd"/>
+                        <Button text="Adicionar item" onAction="#onAdicionarItem"/>
+                    </HBox>
+
+                    <TableView fx:id="itensTable" prefHeight="200">
+                        <columns>
+                            <TableColumn text="Produto" fx:id="produtoColumn"/>
+                            <TableColumn text="Qtd" fx:id="quantidadeColumn"/>
+                            <TableColumn text="Preço" fx:id="precoColumn"/>
+                        </columns>
+                    </TableView>
+
+                    <HBox spacing="10">
+                        <Label text="Forma de pagamento:"/>
+                        <ComboBox fx:id="formaPagamentoComboBox">
+                            <items>
+                                <FXCollections fx:factory="observableArrayList">
+                                    <String fx:value="Pix"/>
+                                    <String fx:value="Cartão"/>
+                                    <String fx:value="Dinheiro"/>
+                                </FXCollections>
+                            </items>
+                        </ComboBox>
+                    </HBox>
+
+                    <HBox spacing="5">
+                        <DatePicker fx:id="dataRetiradaPicker"/>
+                        <TextField fx:id="horaRetiradaField" promptText="Hora (ex: 15:30)"/>
+                    </HBox>
+
+                    <Button text="Criar Pedido" onAction="#onCriarPedido" style="-fx-background-color: #4CAF50; -fx-text-fill: white;"/>
+                </VBox>
+            </AnchorPane>
+        </Tab>
+
+        <!-- Aba Finalizar Comanda -->
+        <Tab text="Finalizar Comanda">
+            <AnchorPane>
+                <VBox spacing="10">
+                    <padding>
+                        <Insets top="10" right="10" bottom="10" left="10"/>
+                    </padding>
+
+                    <HBox spacing="5">
+                        <TextField fx:id="codigoComandaField" promptText="Código da comanda"/>
+                        <Button text="Buscar" onAction="#onBuscarComanda"/>
+                    </HBox>
+
+                    <TableView fx:id="comandaItensTable" prefHeight="200">
+                        <columns>
+                            <TableColumn text="Produto" fx:id="comandaProdutoColumn"/>
+                            <TableColumn text="Qtd" fx:id="comandaQuantidadeColumn"/>
+                            <TableColumn text="Preço" fx:id="comandaPrecoColumn"/>
+                        </columns>
+                    </TableView>
+
+                    <Label fx:id="totalComandaLabel" text="Total: R$ 0,00" style="-fx-font-size: 16px; -fx-font-weight: bold;"/>
+
+                    <HBox spacing="10">
+                        <Label text="Forma de pagamento:"/>
+                        <ComboBox fx:id="formaPagamentoFinalComboBox">
+                            <items>
+                                <FXCollections fx:factory="observableArrayList">
+                                    <String fx:value="Pix"/>
+                                    <String fx:value="Cartão"/>
+                                    <String fx:value="Dinheiro"/>
+                                </FXCollections>
+                            </items>
+                        </ComboBox>
+                    </HBox>
+
+                    <Button text="Confirmar pagamento" onAction="#onConfirmarPagamento" style="-fx-background-color: #2196F3; -fx-text-fill: white;"/>
+                </VBox>
+            </AnchorPane>
+        </Tab>
+    </TabPane>
+</AnchorPane>

@@ -22,7 +22,8 @@ public class OficinaDaFestaApplication extends Application {
     @Override
     public void start(Stage primaryStage) throws Exception {
         SpringFXMLLoader loader = context.getBean(SpringFXMLLoader.class);
-        Parent root = loader.load("/fxml/login.fxml");
+        // Corrigido o caminho para o arquivo FXML
+        Parent root = loader.load("/com/oficinadafesta/login/login.fxml");
 
         primaryStage.setTitle("Login - Oficina da Festa");
         primaryStage.setScene(new Scene(root));

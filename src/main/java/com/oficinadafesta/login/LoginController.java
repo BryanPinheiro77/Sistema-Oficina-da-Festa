@@ -1,6 +1,8 @@
 package com.oficinadafesta.login;
 
+import com.oficinadafesta.config.SpringFXMLLoader;
 import com.oficinadafesta.enums.AreaTipo;
+import jakarta.annotation.PostConstruct;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
@@ -11,8 +13,9 @@ import javafx.scene.control.TextField;
 import javafx.stage.Stage;
 import org.springframework.beans.factory.annotation.Autowired;
 import javafx.scene.Parent;
+import org.springframework.stereotype.Controller;
 
-
+@Controller
 public class LoginController {
 
     @FXML
@@ -26,6 +29,9 @@ public class LoginController {
 
     @Autowired
     private LoginService loginService;
+
+    @Autowired
+    private SpringFXMLLoader springFXMLLoader;  // Injetando o SpringFXMLLoader
 
     @FXML
     private void handleLogin(ActionEvent event) {
@@ -52,39 +58,41 @@ public class LoginController {
 
             switch (setor) {
                 case COMUNICACAO:
-                    root = FXMLLoader.load(getClass().getResource("/fxml/comunicacaoScreen.fxml"));
+                    root = springFXMLLoader.load("/fxml/comunicacaoScreen.fxml");
                     break;
                 case CAFE:
-                    root = FXMLLoader.load(getClass().getResource("/fxml/cafeScreen.fxml"));
+                    root = springFXMLLoader.load("/fxml/cafeScreen.fxml");
                     break;
                 case CONFEITARIA:
-                    root = FXMLLoader.load(getClass().getResource("/fxml/confeitariaScreen.fxml"));
+                    root = springFXMLLoader.load("/fxml/confeitariaScreen.fxml");
                     break;
                 case CAIXA:
-                    root = FXMLLoader.load(getClass().getResource("/fxml/caixaScreen.fxml"));
+                    root = springFXMLLoader.load("/fxml/caixaScreen.fxml");
                     break;
                 case PRODUCAO_DOCINHOS:
-                    root = FXMLLoader.load(getClass().getResource("/fxml/docinhosScreen.fxml"));
+                    root = springFXMLLoader.load("/fxml/docinhosScreen.fxml");
                     break;
                 case PRODUCAO_SALGADOS:
-                    root = FXMLLoader.load(getClass().getResource("/fxml/salgadosScreen.fxml"));
+                    root = springFXMLLoader.load("/fxml/salgadosScreen.fxml");
                     break;
                 case FRITURA:
-                    root = FXMLLoader.load(getClass().getResource("/fxml/frituraScreen.fxml"));
+                    root = springFXMLLoader.load("/fxml/frituraScreen.fxml");
                     break;
                 case SOBREMESAS:
-                    root = FXMLLoader.load(getClass().getResource("/fxml/sobremesaScreen.fxml"));
+                    root = springFXMLLoader.load("/fxml/sobremesaScreen.fxml");
                     break;
-
             }
-         if (root != null) {
-    Stage stage = (Stage) usuarioField.getScene().getWindow();
-    stage.setScene(new Scene(root));
-    stage.show();
-        }
-        } catch (Exception e){
+
+            if (root != null) {
+                Stage stage = (Stage) usuarioField.getScene().getWindow();
+                stage.setScene(new Scene(root));
+                stage.show();
+            }
+        } catch (Exception e) {
             e.printStackTrace();
             lblErroLogin.setText("Falha ao abrir a tela do setor.");
         }
     }
 }
+
+
