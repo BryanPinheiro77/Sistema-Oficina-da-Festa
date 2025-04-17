@@ -82,7 +82,7 @@ spring.datasource.password=sua_senha
 4. Rode a aplicação:
 
 ```bash
-./mvnw spring-boot:run
+mvn javafx:run
 ```
 
 ---
