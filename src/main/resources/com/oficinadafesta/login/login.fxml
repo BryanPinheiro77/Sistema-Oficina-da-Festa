@@ -13,7 +13,7 @@
       <VBox alignment="CENTER" layoutX="150.0" layoutY="100.0" prefHeight="250.0" prefWidth="300.0" spacing="10.0">
          <children>
             <Label text="Login - Oficina da Festa" />
-            <TextField promptText="Usuário" />
+            <TextField fx:id="usuarioField" promptText="Usuário" />
             <PasswordField fx:id="senhaField" promptText="Senha" />
             <Button mnemonicParsing="false" onAction="#handleLogin" text="Entrar" />
             <Label fx:id="lblErroLogin" textFill="RED" />
