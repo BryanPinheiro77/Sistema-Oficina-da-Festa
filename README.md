@@ -83,6 +83,8 @@ bash
 Copiar
 Editar
 ./mvnw spring-boot:run
+```
+
 📅 Próximas Etapas
 🔗 Integração com WhatsApp
 
