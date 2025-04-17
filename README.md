@@ -86,6 +86,7 @@ Editar
 ```
 
 📅 Próximas Etapas
+
 🔗 Integração com WhatsApp
 
 📊 Dashboard em tempo real por setor
