@@ -1,0 +1,96 @@
+/* Estilos gerais */
+.root {
+    -fx-padding: 10;
+    -fx-font-family: "Arial";
+    -fx-font-size: 14px;
+    -fx-background-color: #f4f4f4;
+    -fx-pref-width: 100%;
+}
+
+/* Estilo para os HBoxes e VBoxes */
+.HBox, .VBox {
+    -fx-spacing: 10;
+}
+
+/* Ajuste para os TextFields e ComboBoxes */
+.text-field, .combo-box {
+    -fx-pref-width: 100%;
+    -fx-min-width: 150px;
+    -fx-max-width: 100%;
+}
+
+/* Estilo para botões */
+.button {
+    -fx-background-color: #4CAF50;
+    -fx-text-fill: white;
+    -fx-font-size: 14px;
+    -fx-padding: 10px 20px;
+    -fx-cursor: hand;
+    -fx-border-radius: 5px;
+}
+
+.button:hover {
+    -fx-background-color: #45a049;
+}
+
+/* Estilo para o Label */
+.label {
+    -fx-font-size: 16px;
+    -fx-text-fill: #333333;
+}
+
+/* Estilo para a TableView */
+.table-view {
+    -fx-pref-width: 100%;
+    -fx-min-height: 200px;
+    -fx-max-height: 300px;
+    -fx-hgap: 5;
+    -fx-vgap: 5;
+}
+
+/* Estilo para os RadioButtons */
+.radio-button {
+    -fx-font-size: 14px;
+    -fx-text-fill: #333333;
+}
+
+/* Ajuste para os Tabs */
+.tab-pane {
+    -fx-padding: 10;
+}
+
+.tab {
+    -fx-font-size: 16px;
+    -fx-font-weight: bold;
+    -fx-background-color: #ececec;
+}
+
+.tab:selected {
+    -fx-background-color: #d0d0d0;
+}
+
+.tab-header {
+    -fx-background-color: #ffffff;
+}
+
+/* Estilo para o DatePicker */
+.date-picker {
+    -fx-pref-width: 150px;
+}
+
+/* Estilo para os itens da TableView */
+.table-view .table-row-cell {
+    -fx-alignment: CENTER_LEFT;
+    -fx-font-size: 14px;
+}
+
+/* Estilo para o ComboBox */
+.combo-box {
+    -fx-pref-width: 150px;
+}
+
+/* Estilo para a Label de erro */
+#errorLabel {
+    -fx-text-fill: red;
+    -fx-font-size: 14px;
+}

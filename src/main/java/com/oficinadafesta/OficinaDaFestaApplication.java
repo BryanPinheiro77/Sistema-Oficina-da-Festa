@@ -15,31 +15,35 @@ public class OficinaDaFestaApplication extends Application {
     private static ConfigurableApplicationContext context;
 
     public static void main(String[] args) {
-        // Lança o JavaFX
         launch(args);
     }
 
     @Override
     public void init() {
-        // Inicializa o Spring Boot antes de iniciar o JavaFX
         context = SpringApplication.run(OficinaDaFestaApplication.class);
     }
 
     @Override
     public void start(Stage primaryStage) throws Exception {
-        // Carrega a tela FXML usando o SpringFXMLLoader
         SpringFXMLLoader loader = context.getBean(SpringFXMLLoader.class);
         Parent root = loader.load("com/oficinadafesta/login/login.fxml");
 
-        // Configura a cena do JavaFX
-        primaryStage.setTitle("Login - Oficina da Festa");
-        primaryStage.setScene(new Scene(root));
+        // Cria a cena com tamanho base (opcional, pois a tela será cheia)
+        Scene scene = new Scene(root, 1280, 720); // tamanho inicial para fallback
+
+        // Configura a janela
+        primaryStage.setTitle("Sistema - Oficina da Festa");
+        primaryStage.setScene(scene);
+
+        // Ativa o modo tela cheia
+        primaryStage.setFullScreen(true);
+
+        // Exibe a janela
         primaryStage.show();
     }
 
     @Override
     public void stop() {
-        // Fecha o contexto do Spring Boot
         context.close();
     }
 }

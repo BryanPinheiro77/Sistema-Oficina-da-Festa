@@ -10,19 +10,21 @@
 
 <AnchorPane xmlns="http://javafx.com/javafx"
             xmlns:fx="http://javafx.com/fxml"
-            fx:controller="com.oficinadafesta.front.controller.CaixaController">
+            fx:controller="com.oficinadafesta.front.controller.CaixaController"
+            stylesheets="@style.css">
 
-    <TabPane layoutX="10" layoutY="10" prefWidth="780" prefHeight="580">
+    <TabPane layoutX="10" layoutY="10" prefWidth="780" prefHeight="580" styleClass="tab-pane" AnchorPane.topAnchor="10" AnchorPane.leftAnchor="10" AnchorPane.rightAnchor="10" AnchorPane.bottomAnchor="10">
         <!-- Aba Novo Pedido -->
         <Tab text="Novo Pedido">
             <AnchorPane>
-                <VBox spacing="10">
+                <VBox spacing="10" styleClass="root" AnchorPane.topAnchor="10" AnchorPane.leftAnchor="10" AnchorPane.rightAnchor="10" AnchorPane.bottomAnchor="10">
                     <padding>
                         <Insets top="10" right="10" bottom="10" left="10"/>
                     </padding>
 
-                    <HBox spacing="5">
-                        <TextField fx:id="telefoneField" promptText="Telefone do cliente"/>
+                    <!-- Campos de cliente -->
+                    <HBox spacing="5" AnchorPane.topAnchor="10">
+                        <TextField fx:id="telefoneField" promptText="Telefone do cliente" HBox.hgrow="ALWAYS"/>
                         <Button text="Buscar" onAction="#onBuscarCliente"/>
                     </HBox>
 
@@ -34,12 +36,14 @@
 
                     <Separator/>
 
-                    <HBox spacing="5">
-                        <ComboBox fx:id="produtoComboBox" promptText="Selecionar produto"/>
+                    <!-- Adicionar item -->
+                    <HBox spacing="5" AnchorPane.topAnchor="10">
+                        <ComboBox fx:id="produtoComboBox" promptText="Selecionar produto" HBox.hgrow="ALWAYS"/>
                         <TextField fx:id="quantidadeField" promptText="Qtd"/>
                         <Button text="Adicionar item" onAction="#onAdicionarItem"/>
                     </HBox>
 
+                    <!-- Tabela de itens -->
                     <TableView fx:id="itensTable" prefHeight="200">
                         <columns>
                             <TableColumn text="Produto" fx:id="produtoColumn"/>
@@ -53,21 +57,20 @@
                         <ComboBox fx:id="formaPagamentoComboBox" promptText="Selecione forma de pagamento"/>
                     </HBox>
 
+                    <!-- Seleção de tipo de entrega -->
                     <HBox spacing="10">
                         <RadioButton fx:id="retiradaImediataRadio" text="Retirada Imediata" onAction="#onTipoEntregaSelecionado"/>
                         <RadioButton fx:id="retiradaAgendadaRadio" text="Retirada Agendada" onAction="#onTipoEntregaSelecionado"/>
                         <RadioButton fx:id="entregaRadio" text="Entrega" onAction="#onTipoEntregaSelecionado"/>
                     </HBox>
 
-
                     <HBox spacing="5">
                         <DatePicker fx:id="dataRetiradaPicker"/>
                         <TextField fx:id="horaRetiradaField" promptText="Hora (ex: 15:30)"/>
                     </HBox>
 
-                    <Button text="Criar Pedido" onAction="#onCriarPedido" style="-fx-background-color: #4CAF50; -fx-text-fill: white;"/>
-
-                    <Label fx:id="mensagemLabel" text="" style="-fx-text-fill: red;"/>
+                    <Button text="Criar Pedido" onAction="#onCriarPedido" styleClass="button"/>
+                    <Label fx:id="mensagemLabel" text="" id="errorLabel"/>
                 </VBox>
             </AnchorPane>
         </Tab>
@@ -75,7 +78,7 @@
         <!-- Aba Finalizar Comanda -->
         <Tab text="Finalizar Comanda">
             <AnchorPane>
-                <VBox spacing="10">
+                <VBox spacing="10" styleClass="root" AnchorPane.topAnchor="10" AnchorPane.leftAnchor="10" AnchorPane.rightAnchor="10" AnchorPane.bottomAnchor="10">
                     <padding>
                         <Insets top="10" right="10" bottom="10" left="10"/>
                     </padding>
@@ -100,7 +103,7 @@
                         <ComboBox fx:id="formaPagamentoFinalComboBox" promptText="Selecione forma de pagamento"/>
                     </HBox>
 
-                    <Button text="Confirmar pagamento" onAction="#onConfirmarPagamento" style="-fx-background-color: #2196F3; -fx-text-fill: white;"/>
+                    <Button text="Confirmar pagamento" onAction="#onConfirmarPagamento" styleClass="button"/>
                 </VBox>
             </AnchorPane>
         </Tab>

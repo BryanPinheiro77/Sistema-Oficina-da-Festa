@@ -1,0 +1,53 @@
+.root {
+    -fx-background-color: linear-gradient(to bottom right, #f9f9f9, #dfe9f3);
+    -fx-font-family: "Arial";
+    -fx-font-size: 16px;
+}
+
+.label {
+    -fx-text-fill: #333333;
+    -fx-font-size: 16px;
+}
+
+/* Título com fonte Serif Italic e tamanho 24 */
+.label#tituloLogin {
+    -fx-font-family: "Serif";
+    -fx-font-style: italic;
+    -fx-font-size: 24px;
+    -fx-text-fill: #2e3d59;
+    -fx-padding: 0 0 20px 0;
+    -fx-color: black;
+}
+
+/* Campos de texto */
+.text-field, .password-field {
+    -fx-pref-width: 280px;
+    -fx-padding: 8px;
+    -fx-background-radius: 8px;
+    -fx-background-color: #ffffff;
+    -fx-border-color: #ccc;
+    -fx-border-radius: 8px;
+    -fx-border-width: 1px;
+}
+
+/* Botão */
+.button {
+    -fx-background-color: #4CAF50;
+    -fx-text-fill: white;
+    -fx-font-weight: bold;
+    -fx-font-size: 16px;
+    -fx-padding: 10px 20px;
+    -fx-background-radius: 8px;
+    -fx-cursor: hand;
+}
+
+.button:hover {
+    -fx-background-color: #45a049;
+}
+
+/* Mensagem de erro */
+.label#lblErroLogin {
+    -fx-text-fill: red;
+    -fx-font-size: 14px;
+    -fx-padding: 10px 0 0 0;
+}

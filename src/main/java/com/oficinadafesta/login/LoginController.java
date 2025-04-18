@@ -86,10 +86,12 @@ public class LoginController {
 
             // Carregando a tela
             if (!fxmlPath.isEmpty()) {
-                root = springFXMLLoader.load(fxmlPath); // Usando o caminho correto
+                root = springFXMLLoader.load(fxmlPath);
                 if (root != null) {
                     Stage stage = (Stage) usuarioField.getScene().getWindow();
-                    stage.setScene(new Scene(root));
+                    Scene novaCena = new Scene(root);
+                    stage.setScene(novaCena);
+                    stage.setFullScreen(true); // Ativa tela cheia novamente
                     stage.show();
                 }
             }
