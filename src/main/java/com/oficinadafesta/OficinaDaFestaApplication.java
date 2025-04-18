@@ -4,6 +4,7 @@ import com.oficinadafesta.config.SpringFXMLLoader;
 import javafx.application.Application;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
+import javafx.scene.input.KeyCode;
 import javafx.stage.Stage;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -30,6 +31,19 @@ public class OficinaDaFestaApplication extends Application {
 
         // Cria a cena com tamanho base (opcional, pois a tela será cheia)
         Scene scene = new Scene(root, 1280, 720); // tamanho inicial para fallback
+
+        // Adiciona o ouvinte para capturar pressionamento de tecla
+        scene.setOnKeyPressed(event -> {
+            // Verifica se a tecla pressionada foi F11
+            if (event.getCode() == KeyCode.F11) {
+                // Alterna entre tela cheia e normal
+                if (primaryStage.isFullScreen()) {
+                    primaryStage.setFullScreen(false);  // Sai da tela cheia
+                } else {
+                    primaryStage.setFullScreen(true);   // Vai para a tela cheia
+                }
+            }
+        });
 
         // Configura a janela
         primaryStage.setTitle("Sistema - Oficina da Festa");

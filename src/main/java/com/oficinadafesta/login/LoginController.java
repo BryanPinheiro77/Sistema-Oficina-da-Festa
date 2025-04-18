@@ -10,6 +10,7 @@ import javafx.scene.Scene;
 import javafx.scene.control.Label;
 import javafx.scene.control.PasswordField;
 import javafx.scene.control.TextField;
+import javafx.scene.input.KeyCode;
 import javafx.stage.Stage;
 import org.springframework.beans.factory.annotation.Autowired;
 import javafx.scene.Parent;
@@ -84,6 +85,7 @@ public class LoginController {
                     break;
             }
 
+
             // Carregando a tela
             if (!fxmlPath.isEmpty()) {
                 root = springFXMLLoader.load(fxmlPath);
@@ -92,6 +94,7 @@ public class LoginController {
                     Scene novaCena = new Scene(root);
                     stage.setScene(novaCena);
                     stage.setFullScreen(true); // Ativa tela cheia novamente
+                    addFullScreenListener(stage, novaCena);
                     stage.show();
                 }
             }
@@ -99,6 +102,19 @@ public class LoginController {
             e.printStackTrace();
             lblErroLogin.setText("Falha ao abrir a tela do setor.");
         }
+    }
+
+    private void addFullScreenListener(Stage stage, Scene scene) {
+        // Adiciona o ouvinte de tecla para alternar entre tela cheia e normal
+        scene.setOnKeyPressed(event -> {
+            if (event.getCode() == KeyCode.F11) {
+                if (stage.isFullScreen()) {
+                    stage.setFullScreen(false);  // Sai da tela cheia
+                } else {
+                    stage.setFullScreen(true);   // Vai para a tela cheia
+                }
+            }
+        });
     }
 }
 
