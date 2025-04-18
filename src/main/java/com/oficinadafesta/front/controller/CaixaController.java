@@ -52,6 +52,9 @@ public class CaixaController {
     @FXML private RadioButton retiradaImediataRadio;
     @FXML private RadioButton retiradaAgendadaRadio;
     @FXML private RadioButton entregaRadio;
+    @FXML private TextField campoObservacaoItem;
+    @FXML private TableColumn<ItemPedidoDTO, String> observacaoColumn;
+
 
     // Aba finalizar comanda
     @FXML private TextField codigoComandaField;
@@ -70,6 +73,8 @@ public class CaixaController {
         produtoColumn.setCellValueFactory(new PropertyValueFactory<>("nomeProduto"));
         quantidadeColumn.setCellValueFactory(new PropertyValueFactory<>("quantidade"));
         precoColumn.setCellValueFactory(new PropertyValueFactory<>("precoFormatado"));
+        observacaoColumn.setCellValueFactory(new PropertyValueFactory<>("observacao"));
+
 
         comandaProdutoColumn.setCellValueFactory(new PropertyValueFactory<>("nomeProduto"));
         comandaQuantidadeColumn.setCellValueFactory(new PropertyValueFactory<>("quantidade"));
@@ -103,27 +108,42 @@ public class CaixaController {
 
 
     @FXML
-    private void onAdicionarItem(ActionEvent event){
+    private void onAdicionarItem(ActionEvent event) {
         String nomeProduto = produtoComboBox.getValue();
-        int quantidade = Integer.parseInt(quantidadeField.getText());
+        String textoQuantidade = quantidadeField.getText();
+        String observacao = campoObservacaoItem.getText();
+
+        if (nomeProduto == null || textoQuantidade.isEmpty()) {
+            mostrarErro("Selecione um produto e informe a quantidade.");
+            return;
+        }
+
+        int quantidade;
+        try {
+            quantidade = Integer.parseInt(textoQuantidade);
+        } catch (NumberFormatException e) {
+            mostrarErro("Quantidade inválida.");
+            return;
+        }
 
         Produto produto = buscarProdutoPorNome(nomeProduto);
-        if(produto == null) {
-            mostrarErro("Produto não encontrado!");
+        if (produto == null) {
+            mostrarErro("Produto não encontrado.");
             return;
         }
 
         ItemPedidoDTO item = new ItemPedidoDTO();
-        item.setProdutoId(produto.getId());
         item.setNomeProduto(produto.getNome());
         item.setQuantidade(quantidade);
         item.setPreco(produto.getPreco());
+        item.setObservacao(observacao); // ✅ nova linha
 
         itensTable.getItems().add(item);
 
-
+        // Limpar campos
+        produtoComboBox.setValue(null);
         quantidadeField.clear();
-        produtoComboBox.getEditor().clear();
+        campoObservacaoItem.clear(); // ✅ limpa observação
     }
 
 
@@ -257,6 +277,13 @@ public class CaixaController {
 
         if (nome.isEmpty() || telefone.isEmpty() || cep.isEmpty() || endereco.isEmpty()) {
             mostrarErro("Preencha todos os campos para cadastrar o cliente.");
+            return;
+        }
+
+        // Verifica se o cliente já existe pelo telefone
+        Optional<Cliente> clienteExistente = clienteService.buscarPorTelefone(telefone);
+        if (clienteExistente.isPresent()) {
+            mostrarErro("Cliente já cadastrado com esse telefone.");
             return;
         }
 

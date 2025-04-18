@@ -9,9 +9,9 @@ public class ItemPedidoDTO {
     private String nomeProduto;
     private int quantidade;
     private BigDecimal preco;
+    private String observacao;
 
-    public ItemPedidoDTO() {
-    }
+    public ItemPedidoDTO() {}
 
     public ItemPedidoDTO(Long produtoId, String nomeProduto, int quantidade, BigDecimal preco) {
         this.produtoId = produtoId;
@@ -20,7 +20,6 @@ public class ItemPedidoDTO {
         this.preco = preco;
     }
 
-    // Usado no back-end
     public Long getProdutoId() {
         return produtoId;
     }
@@ -29,21 +28,20 @@ public class ItemPedidoDTO {
         this.produtoId = produtoId;
     }
 
-    public int getQuantidade() {
-        return quantidade;
-    }
-
-    public void setQuantidade(int quantidade) {
-        this.quantidade = quantidade;
-    }
-
-    // Usado no JavaFX
     public String getNomeProduto() {
         return nomeProduto;
     }
 
     public void setNomeProduto(String nomeProduto) {
         this.nomeProduto = nomeProduto;
+    }
+
+    public int getQuantidade() {
+        return quantidade;
+    }
+
+    public void setQuantidade(int quantidade) {
+        this.quantidade = quantidade;
     }
 
     public BigDecimal getPreco() {
@@ -57,5 +55,13 @@ public class ItemPedidoDTO {
     public String getPrecoFormatado() {
         NumberFormat nf = NumberFormat.getCurrencyInstance(new Locale("pt", "BR"));
         return nf.format(preco);
+    }
+
+    public String getObservacao() {
+        return observacao;
+    }
+
+    public void setObservacao(String observacao) {
+        this.observacao = observacao;
     }
 }
