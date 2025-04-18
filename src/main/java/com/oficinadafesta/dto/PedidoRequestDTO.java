@@ -5,6 +5,7 @@ import com.oficinadafesta.enums.TipoEntrega;
 import lombok.Data;
 
 import java.math.BigDecimal;
+import java.time.LocalDateTime;  // Importar para data de retirada
 import java.util.List;
 
 @Data
@@ -19,6 +20,10 @@ public class PedidoRequestDTO {
     private String enderecoEntrega;
     private BigDecimal taxaEntrega;
     private double distanciaEntregaKm;
+
+    // Adicionando data e hora de retirada
+    private LocalDateTime dataRetirada;
+    private String horaRetirada;
 
     private List<PedidoItemDTO> itens;
 

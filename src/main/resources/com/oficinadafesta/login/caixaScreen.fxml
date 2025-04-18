@@ -30,6 +30,10 @@
                     <TextField fx:id="cepField" promptText="CEP"/>
                     <TextField fx:id="enderecoField" promptText="Endereço completo"/>
 
+                    <Button text="Cadastrar novo cliente" onAction="#onCriarNovoCliente"/>
+
+                    <Separator/>
+
                     <HBox spacing="5">
                         <ComboBox fx:id="produtoComboBox" promptText="Selecionar produto"/>
                         <TextField fx:id="quantidadeField" promptText="Qtd"/>
@@ -45,17 +49,16 @@
                     </TableView>
 
                     <HBox spacing="10">
-                        <Label text="Forma de pagamento:"/>
-                        <ComboBox fx:id="formaPagamentoComboBox">
-                            <items>
-                                <FXCollections fx:factory="observableArrayList">
-                                    <String fx:value="Pix"/>
-                                    <String fx:value="Cartão"/>
-                                    <String fx:value="Dinheiro"/>
-                                </FXCollections>
-                            </items>
-                        </ComboBox>
+                        <Label text="Forma de Pagamento:"/>
+                        <ComboBox fx:id="formaPagamentoComboBox" promptText="Selecione forma de pagamento"/>
                     </HBox>
+
+                    <HBox spacing="10">
+                        <RadioButton fx:id="retiradaImediataRadio" text="Retirada Imediata" onAction="#onTipoEntregaSelecionado"/>
+                        <RadioButton fx:id="retiradaAgendadaRadio" text="Retirada Agendada" onAction="#onTipoEntregaSelecionado"/>
+                        <RadioButton fx:id="entregaRadio" text="Entrega" onAction="#onTipoEntregaSelecionado"/>
+                    </HBox>
+
 
                     <HBox spacing="5">
                         <DatePicker fx:id="dataRetiradaPicker"/>
@@ -63,6 +66,8 @@
                     </HBox>
 
                     <Button text="Criar Pedido" onAction="#onCriarPedido" style="-fx-background-color: #4CAF50; -fx-text-fill: white;"/>
+
+                    <Label fx:id="mensagemLabel" text="" style="-fx-text-fill: red;"/>
                 </VBox>
             </AnchorPane>
         </Tab>
@@ -91,16 +96,8 @@
                     <Label fx:id="totalComandaLabel" text="Total: R$ 0,00" style="-fx-font-size: 16px; -fx-font-weight: bold;"/>
 
                     <HBox spacing="10">
-                        <Label text="Forma de pagamento:"/>
-                        <ComboBox fx:id="formaPagamentoFinalComboBox">
-                            <items>
-                                <FXCollections fx:factory="observableArrayList">
-                                    <String fx:value="Pix"/>
-                                    <String fx:value="Cartão"/>
-                                    <String fx:value="Dinheiro"/>
-                                </FXCollections>
-                            </items>
-                        </ComboBox>
+                        <Label text="Forma de Pagamento:"/>
+                        <ComboBox fx:id="formaPagamentoFinalComboBox" promptText="Selecione forma de pagamento"/>
                     </HBox>
 
                     <Button text="Confirmar pagamento" onAction="#onConfirmarPagamento" style="-fx-background-color: #2196F3; -fx-text-fill: white;"/>

@@ -81,6 +81,7 @@ public class PedidoService {
         pedido.setPagamentoConfirmado(valorPago.compareTo(total) >= 0);
 
         return pedidoRepository.save(pedido);
+
     }
 
 
@@ -225,6 +226,7 @@ public class PedidoService {
 
         comanda.getPedidos().add(pedido);
         comandaRepository.save(comanda);
+
     }
 
 public PedidoResumoDTO adicionarPedidoCafe(String codigoComanda, AdicionarPedidoCafeDTO dto){
@@ -275,5 +277,6 @@ public PedidoResumoDTO adicionarPedidoCafe(String codigoComanda, AdicionarPedido
 
         return resumo;
 }
+
 }
 
