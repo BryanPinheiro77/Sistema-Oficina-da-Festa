@@ -2,23 +2,31 @@ package com.oficinadafesta.front.controller;
 
 import com.oficinadafesta.cliente.Cliente;
 import com.oficinadafesta.cliente.ClienteService;
+import com.oficinadafesta.config.SpringFXMLLoader;
 import com.oficinadafesta.dto.ItemPedidoDTO;
 import com.oficinadafesta.dto.PedidoRequestDTO;
 import com.oficinadafesta.enums.FormaPagamento;
 import com.oficinadafesta.enums.TipoEntrega;
+import com.oficinadafesta.login.UsuarioLogado;
 import com.oficinadafesta.pedido.ItemPedido;
 import com.oficinadafesta.pedido.PedidoService;
 import com.oficinadafesta.produto.Produto;
 import com.oficinadafesta.produto.ProdutoService;
 import javafx.fxml.FXML;
+import javafx.fxml.FXMLLoader;
+import javafx.scene.Parent;
+import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
+import javafx.stage.Stage;
 import lombok.Data;
 import javafx.event.ActionEvent;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import java.io.IOException;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
@@ -54,6 +62,16 @@ public class CaixaController {
     @FXML private RadioButton entregaRadio;
     @FXML private TextField campoObservacaoItem;
     @FXML private TableColumn<ItemPedidoDTO, String> observacaoColumn;
+    @FXML private Button btnSair;
+    @Autowired
+    private SpringFXMLLoader springFXMLLoader;
+
+    @FXML
+    private Label lblErroLogin;
+
+
+
+
 
 
     // Aba finalizar comanda
@@ -87,6 +105,12 @@ public class CaixaController {
 
         formaPagamentoComboBox.getItems().addAll("PIX", "CARTAO", "DINHEIRO");
         formaPagamentoFinalComboBox.getItems().addAll("PIX", "CARTAO", "DINHEIRO");
+
+        retiradaToggleGroup = new ToggleGroup();
+        retiradaImediataRadio.setToggleGroup(retiradaToggleGroup);
+        retiradaAgendadaRadio.setToggleGroup(retiradaToggleGroup);
+        entregaRadio.setToggleGroup(retiradaToggleGroup);
+
     }
 
     @FXML
@@ -136,7 +160,8 @@ public class CaixaController {
         item.setNomeProduto(produto.getNome());
         item.setQuantidade(quantidade);
         item.setPreco(produto.getPreco());
-        item.setObservacao(observacao); // ✅ nova linha
+        item.setProdutoId(produto.getId());
+        item.setObservacao(observacao);
 
         itensTable.getItems().add(item);
 
@@ -150,6 +175,8 @@ public class CaixaController {
 
     @FXML
     private void onCriarPedido(ActionEvent event){
+        System.out.println("Método de criação de pedido chamado"); // Log de depuração
+
         if (clienteAtual == null){
             mostrarErro("Busque um cliente válido antes de criar o pedido.");
             return;
@@ -172,6 +199,8 @@ public class CaixaController {
 
         RadioButton selecionado = (RadioButton) retiradaToggleGroup.getSelectedToggle();
         boolean agendar = selecionado != null && "Agendar".equalsIgnoreCase(selecionado.getText());
+
+        System.out.println("Tipo de entrega selecionado: " + (agendar ? "Agendado" : "Entrega"));
 
         if (agendar){
             pedido.setTipoEntrega(TipoEntrega.RETIRADA);
@@ -209,10 +238,14 @@ public class CaixaController {
 
         pedido.setItens(itens);
 
+        // Adicionando log para verificar se os dados estão sendo preenchidos corretamente
+        System.out.println("Pedido a ser criado: " + pedido);
+
         pedidoService.criarPedido(pedido);
         mostrarSucesso("Pedido criado com sucesso!");
         limparCamposPedido();
     }
+
 
     // Método para buscar produto por nome
     private Produto buscarProdutoPorNome(String nomeProduto) {

@@ -10,6 +10,8 @@
             minWidth="900" minHeight="600"
             prefWidth="1124" prefHeight="820">
 
+
+
     <TabPane layoutX="10" layoutY="10" prefWidth="780" prefHeight="580" AnchorPane.topAnchor="10" AnchorPane.leftAnchor="10" AnchorPane.rightAnchor="10" AnchorPane.bottomAnchor="10">
         <!-- Aba Novo Pedido -->
         <Tab text="Novo Pedido">
@@ -54,9 +56,9 @@
                     </HBox>
 
                     <HBox spacing="10">
-                        <RadioButton fx:id="retiradaImediataRadio" text="Retirada Imediata" onAction="#onTipoEntregaSelecionado"/>
-                        <RadioButton fx:id="retiradaAgendadaRadio" text="Retirada Agendada" onAction="#onTipoEntregaSelecionado"/>
-                        <RadioButton fx:id="entregaRadio" text="Entrega" onAction="#onTipoEntregaSelecionado"/>
+                        <RadioButton fx:id="retiradaImediataRadio" text="Retirada Imediata" onAction="#onTipoEntregaSelecionado" />
+                        <RadioButton fx:id="retiradaAgendadaRadio" text="Retirada Agendada" onAction="#onTipoEntregaSelecionado" />
+                        <RadioButton fx:id="entregaRadio" text="Entrega" onAction="#onTipoEntregaSelecionado" />
                     </HBox>
 
                     <HBox spacing="5">
@@ -100,4 +102,5 @@
             </AnchorPane>
         </Tab>
     </TabPane>
+
 </AnchorPane>

@@ -16,6 +16,8 @@ public class LoginService {
         Usuario user = usuarioRepository.findByUsuarioAndSenha(usuario,senha);
 
         if (user != null){
+            // Armazena o usuário logado
+            UsuarioLogado.setUsuario(user);
             return user.getSetor();
         }
         return null;
