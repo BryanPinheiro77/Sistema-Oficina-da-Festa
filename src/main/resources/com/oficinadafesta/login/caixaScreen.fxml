@@ -11,7 +11,6 @@
             prefWidth="1124" prefHeight="820">
 
 
-
     <TabPane layoutX="10" layoutY="10" prefWidth="780" prefHeight="580" AnchorPane.topAnchor="10" AnchorPane.leftAnchor="10" AnchorPane.rightAnchor="10" AnchorPane.bottomAnchor="10">
         <!-- Aba Novo Pedido -->
         <Tab text="Novo Pedido">
@@ -70,6 +69,7 @@
                     <Label fx:id="mensagemLabel" text="" id="errorLabel"/>
                 </VBox>
             </AnchorPane>
+
         </Tab>
 
         <!-- Aba Finalizar Comanda -->
@@ -102,5 +102,15 @@
             </AnchorPane>
         </Tab>
     </TabPane>
+
+
+    <Button text="Sair"
+            fx:id="logoutButton"
+            onAction="#deslogar"
+            style="-fx-background-color: #e74c3c; -fx-text-fill: white; -fx-font-weight: bold;"
+            layoutX="1020" layoutY="10"
+            prefWidth="80" prefHeight="30"
+            AnchorPane.rightAnchor="10" AnchorPane.topAnchor="10"/>
+
 
 </AnchorPane>

@@ -65,6 +65,9 @@ public class CaixaController {
     @FXML private Button btnSair;
     @Autowired
     private SpringFXMLLoader springFXMLLoader;
+    @FXML
+    private Button logoutButton;
+
 
     @FXML
     private Label lblErroLogin;
@@ -88,6 +91,7 @@ public class CaixaController {
 
     @FXML
     public void initialize(){
+        UsuarioLogado.logout();
         produtoColumn.setCellValueFactory(new PropertyValueFactory<>("nomeProduto"));
         quantidadeColumn.setCellValueFactory(new PropertyValueFactory<>("quantidade"));
         precoColumn.setCellValueFactory(new PropertyValueFactory<>("precoFormatado"));
@@ -347,5 +351,24 @@ public class CaixaController {
             // Lógica para entrega
         }
     }
+
+    @FXML
+    private void deslogar() {
+        UsuarioLogado.logout(); // Limpa a sessão
+
+        try {
+            FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource("/com/oficinadafesta/login/login.fxml"));
+            Parent root = fxmlLoader.load();
+
+            Stage stage = (Stage) logoutButton.getScene().getWindow();
+            Scene scene = new Scene(root);
+            stage.setScene(scene);
+            stage.setFullScreen(true); // se quiser manter fullscreen
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
 
 }

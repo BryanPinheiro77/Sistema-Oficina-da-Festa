@@ -31,11 +31,18 @@ public class LoginController {
     @Autowired
     private LoginService loginService;
 
+
     @Autowired
     private SpringFXMLLoader springFXMLLoader;  // Injetando o SpringFXMLLoader
 
+    @PostConstruct
+    public void init() {
+        System.out.println("LoginController iniciado. loginService é " + (loginService != null ? "INJETADO" : "NULO"));
+    }
+
     @FXML
     private void handleLogin(ActionEvent event) {
+        loginService.autenticar("usuario", "senha");
         String usuario = usuarioField.getText();
         String senha = senhaField.getText();
 
