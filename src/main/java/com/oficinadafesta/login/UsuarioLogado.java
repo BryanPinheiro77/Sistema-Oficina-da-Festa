@@ -1,5 +1,7 @@
 package com.oficinadafesta.login;
 
+import com.oficinadafesta.auth.domain.Usuario;
+
 public class UsuarioLogado {
     private static Usuario usuarioAutenticado;
 

@@ -1,6 +1,6 @@
 package com.oficinadafesta;
 
-import com.oficinadafesta.config.SpringFXMLLoader;
+import com.oficinadafesta.shared.config.SpringFXMLLoader;
 import javafx.application.Application;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
@@ -27,7 +27,7 @@ public class OficinaDaFestaApplication extends Application {
     @Override
     public void start(Stage primaryStage) throws Exception {
         SpringFXMLLoader loader = context.getBean(SpringFXMLLoader.class);
-        Parent root = loader.load("com/oficinadafesta/login/login.fxml");
+        Parent root = loader.load("ui/auth/login.fxml");
 
         // Cria a cena com tamanho base (opcional, pois a tela será cheia)
         Scene scene = new Scene(root, 1280, 720); // tamanho inicial para fallback
