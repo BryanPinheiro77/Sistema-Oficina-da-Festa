@@ -1,16 +1,18 @@
 package com.oficinadafesta.caixa.ui;
 
+import com.oficinadafesta.caixa.dto.ItemPedidoRow;
 import com.oficinadafesta.cliente.domain.Cliente;
 import com.oficinadafesta.cliente.service.ClienteService;
-import com.oficinadafesta.shared.config.SpringFXMLLoader;
-import com.oficinadafesta.pedido.dto.ItemPedidoDTO;
-import com.oficinadafesta.pedido.dto.PedidoRequestDTO;
 import com.oficinadafesta.enums.FormaPagamento;
 import com.oficinadafesta.enums.TipoEntrega;
 import com.oficinadafesta.login.UsuarioLogado;
+import com.oficinadafesta.pedido.dto.PedidoItemRequestDTO;
+import com.oficinadafesta.pedido.dto.PedidoRequestDTO;
 import com.oficinadafesta.pedido.service.PedidoService;
 import com.oficinadafesta.produto.domain.Produto;
 import com.oficinadafesta.produto.service.ProdutoService;
+import com.oficinadafesta.shared.config.SpringFXMLLoader;
+import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
@@ -19,9 +21,6 @@ import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.stage.Stage;
 import lombok.Data;
-import javafx.event.ActionEvent;
-import javafx.scene.control.Label;
-import javafx.scene.control.TextField;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -37,6 +36,7 @@ import java.util.Optional;
 @Data
 @Component
 public class CaixaController {
+
     private final ClienteService clienteService;
     private final ProdutoService produtoService;
     private final PedidoService pedidoService;
@@ -44,14 +44,17 @@ public class CaixaController {
     private Cliente clienteAtual;
     private List<Produto> produtosDisponiveis;
 
-    //Aba novo pedido
+    // Aba novo pedido
     @FXML private TextField telefoneField, nomeField, cepField, enderecoField;
     @FXML private ComboBox<String> produtoComboBox;
     @FXML private TextField quantidadeField;
-    @FXML private TableView<ItemPedidoDTO> itensTable;
-    @FXML private TableColumn<ItemPedidoDTO, String> produtoColumn;
-    @FXML private TableColumn<ItemPedidoDTO, Integer> quantidadeColumn;
-    @FXML private TableColumn<ItemPedidoDTO, String> precoColumn;
+
+    @FXML private TableView<ItemPedidoRow> itensTable;
+    @FXML private TableColumn<ItemPedidoRow, String> produtoColumn;
+    @FXML private TableColumn<ItemPedidoRow, Integer> quantidadeColumn;
+    @FXML private TableColumn<ItemPedidoRow, String> precoColumn;
+    @FXML private TableColumn<ItemPedidoRow, String> observacaoColumn;
+
     @FXML private ComboBox<String> formaPagamentoComboBox;
     @FXML private ToggleGroup retiradaToggleGroup;
     @FXML private DatePicker dataRetiradaPicker;
@@ -60,49 +63,38 @@ public class CaixaController {
     @FXML private RadioButton retiradaAgendadaRadio;
     @FXML private RadioButton entregaRadio;
     @FXML private TextField campoObservacaoItem;
-    @FXML private TableColumn<ItemPedidoDTO, String> observacaoColumn;
-    @FXML private Button btnSair;
+
     @Autowired
     private SpringFXMLLoader springFXMLLoader;
-    @FXML
-    private Button logoutButton;
 
+    @FXML private Button logoutButton;
+    @FXML private Label lblErroLogin;
 
-    @FXML
-    private Label lblErroLogin;
-
-
-
-
-
-
-    // Aba finalizar comanda
+    // Aba finalizar comanda (mantive como estava; depois a gente alinha com DTO específico da comanda)
     @FXML private TextField codigoComandaField;
-    @FXML private TableView<ItemPedidoDTO> comandaItensTable;
-    @FXML private TableColumn<ItemPedidoDTO, String> comandaProdutoColumn;
-    @FXML private TableColumn<ItemPedidoDTO, Integer> comandaQuantidadeColumn;
-    @FXML private TableColumn<ItemPedidoDTO, String> comandaPrecoColumn;
+    @FXML private TableView<ItemPedidoRow> comandaItensTable;
+    @FXML private TableColumn<ItemPedidoRow, String> comandaProdutoColumn;
+    @FXML private TableColumn<ItemPedidoRow, Integer> comandaQuantidadeColumn;
+    @FXML private TableColumn<ItemPedidoRow, String> comandaPrecoColumn;
     @FXML private Label totalComandaLabel;
     @FXML private ComboBox<String> formaPagamentoFinalComboBox;
 
-
-
-
     @FXML
-    public void initialize(){
+    public void initialize() {
+        // Mantido por enquanto, como tu pediu
         UsuarioLogado.logout();
+
         produtoColumn.setCellValueFactory(new PropertyValueFactory<>("nomeProduto"));
         quantidadeColumn.setCellValueFactory(new PropertyValueFactory<>("quantidade"));
         precoColumn.setCellValueFactory(new PropertyValueFactory<>("precoFormatado"));
         observacaoColumn.setCellValueFactory(new PropertyValueFactory<>("observacao"));
-
 
         comandaProdutoColumn.setCellValueFactory(new PropertyValueFactory<>("nomeProduto"));
         comandaQuantidadeColumn.setCellValueFactory(new PropertyValueFactory<>("quantidade"));
         comandaPrecoColumn.setCellValueFactory(new PropertyValueFactory<>("precoFormatado"));
 
         produtosDisponiveis = produtoService.listarTodos();
-        for(Produto p : produtosDisponiveis){
+        for (Produto p : produtosDisponiveis) {
             produtoComboBox.getItems().add(p.getNome());
         }
 
@@ -113,17 +105,15 @@ public class CaixaController {
         retiradaImediataRadio.setToggleGroup(retiradaToggleGroup);
         retiradaAgendadaRadio.setToggleGroup(retiradaToggleGroup);
         entregaRadio.setToggleGroup(retiradaToggleGroup);
-
     }
 
     @FXML
     private void onBuscarCliente(ActionEvent event) {
         String telefone = telefoneField.getText();
-
-        // Usando Optional corretamente
         Optional<Cliente> clienteOptional = clienteService.buscarPorTelefone(telefone);
+
         if (clienteOptional.isPresent()) {
-            clienteAtual = clienteOptional.get(); // Obter cliente se presente
+            clienteAtual = clienteOptional.get();
             nomeField.setText(clienteAtual.getNome());
             cepField.setText(clienteAtual.getCep());
             enderecoField.setText(clienteAtual.getEnderecoCompleto());
@@ -132,7 +122,6 @@ public class CaixaController {
             mostrarErro("Cliente não encontrado. Preencha os dados para criar novo.");
         }
     }
-
 
     @FXML
     private void onAdicionarItem(ActionEvent event) {
@@ -159,33 +148,29 @@ public class CaixaController {
             return;
         }
 
-        ItemPedidoDTO item = new ItemPedidoDTO();
-        item.setNomeProduto(produto.getNome());
-        item.setQuantidade(quantidade);
-        item.setPreco(produto.getPreco());
-        item.setProdutoId(produto.getId());
-        item.setObservacao(observacao);
+        ItemPedidoRow item = new ItemPedidoRow(
+                produto.getId(),
+                produto.getNome(),
+                quantidade,
+                produto.getPreco(),
+                observacao
+        );
 
         itensTable.getItems().add(item);
 
-        // Limpar campos
         produtoComboBox.setValue(null);
         quantidadeField.clear();
-        campoObservacaoItem.clear(); // ✅ limpa observação
+        campoObservacaoItem.clear();
     }
 
-
-
     @FXML
-    private void onCriarPedido(ActionEvent event){
-        System.out.println("Método de criação de pedido chamado"); // Log de depuração
-
-        if (clienteAtual == null){
+    private void onCriarPedido(ActionEvent event) {
+        if (clienteAtual == null) {
             mostrarErro("Busque um cliente válido antes de criar o pedido.");
             return;
         }
 
-        if (itensTable.getItems().isEmpty()){
+        if (itensTable.getItems().isEmpty()) {
             mostrarErro("Adicione ao menos um item.");
             return;
         }
@@ -200,16 +185,17 @@ public class CaixaController {
         }
         pedido.setFormaPagamento(FormaPagamento.valueOf(formaPagamentoStr.toUpperCase()));
 
+        // ⚠️ Aqui teu código original tinha lógica baseada em texto "Agendar"
+        // Vou manter a estrutura, mas recomendo mudar para usar os RadioButtons diretamente.
         RadioButton selecionado = (RadioButton) retiradaToggleGroup.getSelectedToggle();
-        boolean agendar = selecionado != null && "Agendar".equalsIgnoreCase(selecionado.getText());
+        boolean agendar = selecionado != null && selecionado == retiradaAgendadaRadio;
 
-        System.out.println("Tipo de entrega selecionado: " + (agendar ? "Agendado" : "Entrega"));
-
-        if (agendar){
+        if (agendar) {
             pedido.setTipoEntrega(TipoEntrega.RETIRADA);
             pedido.setParaEntrega(false);
+
             LocalDate data = dataRetiradaPicker.getValue();
-            String horaTexto = horaRetiradaField.getText(); // Exemplo: "14:30"
+            String horaTexto = horaRetiradaField.getText();
 
             if (data == null || horaTexto == null || horaTexto.isBlank()) {
                 mostrarErro("Informe a data e a hora da retirada.");
@@ -217,7 +203,7 @@ public class CaixaController {
             }
 
             try {
-                LocalTime hora = LocalTime.parse(horaTexto); // Formato esperado: HH:mm
+                LocalTime hora = LocalTime.parse(horaTexto); // HH:mm
                 LocalDateTime dataHora = LocalDateTime.of(data, hora);
                 pedido.setDataRetirada(dataHora);
             } catch (DateTimeParseException e) {
@@ -230,27 +216,21 @@ public class CaixaController {
             pedido.setEnderecoEntrega(enderecoField.getText());
         }
 
-        // Convertendo os itens para PedidoItemDTO
-        List<PedidoRequestDTO.PedidoItemDTO> itens = new ArrayList<>();
-        for (ItemPedidoDTO item : itensTable.getItems()) {
-            PedidoRequestDTO.PedidoItemDTO dto = new PedidoRequestDTO.PedidoItemDTO();
-            dto.setProdutoId(item.getProdutoId());
-            dto.setQuantidade(item.getQuantidade());
-            itens.add(dto);
+        List<PedidoItemRequestDTO> itens = new ArrayList<>();
+        for (ItemPedidoRow item : itensTable.getItems()) {
+            itens.add(new PedidoItemRequestDTO(
+                    item.getProdutoId(),
+                    item.getQuantidade(),
+                    item.getObservacao()
+            ));
         }
-
         pedido.setItens(itens);
-
-        // Adicionando log para verificar se os dados estão sendo preenchidos corretamente
-        System.out.println("Pedido a ser criado: " + pedido);
 
         pedidoService.criarPedido(pedido);
         mostrarSucesso("Pedido criado com sucesso!");
         limparCamposPedido();
     }
 
-
-    // Método para buscar produto por nome
     private Produto buscarProdutoPorNome(String nomeProduto) {
         for (Produto produto : produtosDisponiveis) {
             if (produto.getNome().equalsIgnoreCase(nomeProduto)) {
@@ -260,7 +240,6 @@ public class CaixaController {
         return null;
     }
 
-    // Exibe a mensagem de erro
     private void mostrarErro(String msg) {
         Alert alerta = new Alert(Alert.AlertType.ERROR);
         alerta.setTitle("Erro");
@@ -269,7 +248,6 @@ public class CaixaController {
         alerta.showAndWait();
     }
 
-    // Exibe a mensagem de sucesso
     private void mostrarSucesso(String msg) {
         Alert alerta = new Alert(Alert.AlertType.INFORMATION);
         alerta.setTitle("Sucesso");
@@ -278,7 +256,6 @@ public class CaixaController {
         alerta.showAndWait();
     }
 
-    // Limpa os campos após criar o pedido
     private void limparCamposPedido() {
         telefoneField.clear();
         nomeField.clear();
@@ -295,7 +272,6 @@ public class CaixaController {
 
     @FXML
     private void onBuscarComanda(ActionEvent event) {
-        String codigoComanda = codigoComandaField.getText();
         mostrarSucesso("Comanda encontrada!");
     }
 
@@ -303,9 +279,9 @@ public class CaixaController {
     private void onConfirmarPagamento(ActionEvent event) {
         mostrarSucesso("Pagamento confirmado com sucesso!");
     }
+
     @FXML
     private void onCriarNovoCliente(ActionEvent event) {
-        // Verifica se os campos de cliente estão preenchidos
         String nome = nomeField.getText();
         String telefone = telefoneField.getText();
         String cep = cepField.getText();
@@ -316,24 +292,21 @@ public class CaixaController {
             return;
         }
 
-        // Verifica se o cliente já existe pelo telefone
         Optional<Cliente> clienteExistente = clienteService.buscarPorTelefone(telefone);
         if (clienteExistente.isPresent()) {
             mostrarErro("Cliente já cadastrado com esse telefone.");
             return;
         }
 
-        // Cria um novo cliente
         Cliente novoCliente = new Cliente();
         novoCliente.setNome(nome);
         novoCliente.setTelefone(telefone);
         novoCliente.setCep(cep);
         novoCliente.setEnderecoCompleto(endereco);
 
-        // Salva o cliente usando o ClienteService
         try {
-            clienteService.salvar(novoCliente); // Supondo que exista um método para salvar o cliente
-            clienteAtual = novoCliente; // Define o cliente atual para o novo cliente criado
+            clienteService.salvar(novoCliente);
+            clienteAtual = novoCliente;
             mostrarSucesso("Novo cliente criado com sucesso!");
         } catch (Exception e) {
             mostrarErro("Erro ao criar o cliente: " + e.getMessage());
@@ -342,18 +315,12 @@ public class CaixaController {
 
     @FXML
     private void onTipoEntregaSelecionado(ActionEvent event) {
-        if (retiradaImediataRadio.isSelected()) {
-            // Lógica para retirada imediata
-        } else if (retiradaAgendadaRadio.isSelected()) {
-            // Lógica para retirada agendada
-        } else if (entregaRadio.isSelected()) {
-            // Lógica para entrega
-        }
+        // depois a gente melhora esse fluxo
     }
 
     @FXML
     private void deslogar() {
-        UsuarioLogado.logout(); // Limpa a sessão
+        UsuarioLogado.logout();
 
         try {
             FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource("/ui/auth/login.fxml"));
@@ -362,12 +329,10 @@ public class CaixaController {
             Stage stage = (Stage) logoutButton.getScene().getWindow();
             Scene scene = new Scene(root);
             stage.setScene(scene);
-            stage.setFullScreen(true); // se quiser manter fullscreen
+            stage.setFullScreen(true);
 
         } catch (IOException e) {
             e.printStackTrace();
         }
     }
-
-
 }
