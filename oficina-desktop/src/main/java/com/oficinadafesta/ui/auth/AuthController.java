@@ -1,5 +1,6 @@
 package com.oficinadafesta.ui.auth;
 
+import com.oficinadafesta.api.dto.AuthResponseDTO;
 import com.oficinadafesta.app.AppContext;
 import com.oficinadafesta.ui.caixa.CaixaController;
 import javafx.event.ActionEvent;
@@ -36,11 +37,23 @@ public class AuthController {
         }
 
         try {
-            String setor = ctx.authApi.login(usuario, senha);
-            String setorNorm = setor == null ? "" : setor.replace("\"", "").trim().toUpperCase();
+            AuthResponseDTO resp = ctx.authApi.login(usuario, senha);
 
-            if (setorNorm.isBlank()) {
+            if (resp == null || resp.accessToken == null || resp.accessToken.isBlank()) {
                 lblErroLogin.setText("Usuário ou senha inválidos.");
+                return;
+            }
+
+            // salva sessão
+            ctx.accessToken = resp.accessToken;
+            ctx.setor = resp.setor;
+
+            // injeta Bearer para todas as próximas chamadas
+            ctx.http.setBearerToken(ctx.accessToken);
+
+            String setorNorm = (ctx.setor == null ? "" : ctx.setor.trim().toUpperCase());
+            if (setorNorm.isBlank()) {
+                lblErroLogin.setText("Setor inválido retornado pelo servidor.");
                 return;
             }
 
@@ -63,6 +76,7 @@ public class AuthController {
             case "PRODUCAO_SALGADOS" -> "/ui/setores/salgadosScreen.fxml";
             case "FRITURA" -> "/ui/setores/frituraScreen.fxml";
             case "SOBREMESAS" -> "/ui/setores/sobremesaScreen.fxml";
+            case "ADMIN" -> "/ui/setores/caixaScreen.fxml"; // provisório (ou cria tela admin)
             default -> null;
         };
 
@@ -71,22 +85,14 @@ public class AuthController {
             return;
         }
 
-        FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource(fxmlPath));
+        FXMLLoader loader = new FXMLLoader(getClass().getResource(fxmlPath));
 
-        if ("CAIXA".equals(setorNorm)) {
-            fxmlLoader.setControllerFactory(type -> {
-                if (type == CaixaController.class) {
-                    return new CaixaController(ctx.clienteApi, ctx.produtoApi, ctx.pedidoApi);
-                }
-                try {
-                    return type.getDeclaredConstructor().newInstance();
-                } catch (Exception e) {
-                    throw new RuntimeException(e);
-                }
-            });
+        // Só CAIXA/ADMIN precisa controller com ctx (injeção)
+        if ("CAIXA".equals(setorNorm) || "ADMIN".equals(setorNorm)) {
+            loader.setController(new CaixaController(ctx));
         }
 
-        Parent root = fxmlLoader.load();
+        Parent root = loader.load();
 
         Stage stage = (Stage) usuarioField.getScene().getWindow();
         Scene novaCena = new Scene(root);

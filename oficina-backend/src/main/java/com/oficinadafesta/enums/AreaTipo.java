@@ -1,6 +1,7 @@
 package com.oficinadafesta.enums;
 
 public enum AreaTipo {
+    ADMIN,
     COMUNICACAO,
     CAIXA,
     CONFEITARIA,

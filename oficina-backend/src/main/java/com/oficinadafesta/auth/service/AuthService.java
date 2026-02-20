@@ -1,27 +1,43 @@
 package com.oficinadafesta.auth.service;
 
-
 import com.oficinadafesta.auth.domain.Usuario;
+import com.oficinadafesta.auth.dto.AuthResponseDTO;
 import com.oficinadafesta.auth.repository.UsuarioRepository;
-import com.oficinadafesta.login.UsuarioLogado;
-import org.springframework.beans.factory.annotation.Autowired;
+import com.oficinadafesta.shared.security.JwtService;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-import com.oficinadafesta.enums.AreaTipo;
 
 @Service
 public class AuthService {
 
-    @Autowired
-    private UsuarioRepository usuarioRepository;
+    private final UsuarioRepository usuarioRepository;
+    private final PasswordEncoder passwordEncoder;
+    private final JwtService jwtService;
 
-    public AreaTipo autenticar(String usuario, String senha){
-        Usuario user = usuarioRepository.findByUsuarioAndSenha(usuario,senha);
+    public AuthService(UsuarioRepository usuarioRepository,
+                       PasswordEncoder passwordEncoder,
+                       JwtService jwtService) {
+        this.usuarioRepository = usuarioRepository;
+        this.passwordEncoder = passwordEncoder;
+        this.jwtService = jwtService;
+    }
 
-        if (user != null){
-            // Armazena o usuário logado
-            UsuarioLogado.setUsuario(user);
-            return user.getSetor();
-        }
-        return null;
+    public AuthResponseDTO login(String usuario, String senha) {
+        Usuario user = usuarioRepository.findByUsuario(usuario).orElse(null);
+        if (user == null) return null;
+
+        if (!passwordEncoder.matches(senha, user.getSenha())) return null;
+
+        String token = jwtService.gerarToken(
+                user.getId(),
+                user.getUsuario(),
+                user.getSetor().name()
+        );
+
+        return new AuthResponseDTO(
+                token,
+                jwtService.getExpiresInSeconds(),
+                user.getSetor().name()
+        );
     }
 }

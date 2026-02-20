@@ -8,6 +8,7 @@ import com.oficinadafesta.api.dto.PedidoItemRequestDTO;
 import com.oficinadafesta.api.dto.PedidoRequestDTO;
 import com.oficinadafesta.api.dto.ProdutoDTO;
 import com.oficinadafesta.ui.model.ItemPedidoRow;
+import com.oficinadafesta.app.AppContext;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
@@ -16,7 +17,6 @@ import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.stage.Stage;
-import lombok.Data;
 
 import java.io.IOException;
 import java.time.LocalDate;
@@ -25,17 +25,18 @@ import java.time.LocalTime;
 import java.time.format.DateTimeParseException;
 import java.util.*;
 
-@Data
 public class CaixaController {
 
+    private final AppContext ctx;
     private final ClienteApi clienteApi;
     private final ProdutoApi produtoApi;
     private final PedidoApi pedidoApi;
 
-    public CaixaController(ClienteApi clienteApi, ProdutoApi produtoApi, PedidoApi pedidoApi) {
-        this.clienteApi = clienteApi;
-        this.produtoApi = produtoApi;
-        this.pedidoApi = pedidoApi;
+    public CaixaController(AppContext ctx) {
+        this.ctx = ctx;
+        this.clienteApi = ctx.clienteApi;
+        this.produtoApi = ctx.produtoApi;
+        this.pedidoApi = ctx.pedidoApi;
     }
 
     private ClienteDTO clienteAtual;
@@ -288,19 +289,39 @@ public class CaixaController {
         }
     }
 
-    @FXML
-    private void deslogar() {
-        try {
-            FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource("/ui/auth/login.fxml"));
-            Parent root = fxmlLoader.load();
+        @FXML
+        private void deslogar() {
+            try {
+                // limpa token/setor e remove bearer
+                ctx.clearSession();
 
-            Stage stage = (Stage) logoutButton.getScene().getWindow();
-            stage.setScene(new Scene(root));
-            stage.setFullScreen(true);
-        } catch (IOException e) {
-            e.printStackTrace();
+                FXMLLoader loader = new FXMLLoader(getClass().getResource("/ui/auth/login.fxml"));
+
+                // IMPORTANTÍSSIMO: injetar AppContext no AuthController
+                loader.setControllerFactory(type -> {
+                    try {
+                        if (type == com.oficinadafesta.ui.auth.AuthController.class) {
+                            return type.getConstructor(com.oficinadafesta.app.AppContext.class).newInstance(ctx);
+                        }
+                        return type.getDeclaredConstructor().newInstance();
+                    } catch (Exception e) {
+                        throw new RuntimeException(e);
+                    }
+                });
+
+                Parent root = loader.load();
+
+                Stage stage = (Stage) logoutButton.getScene().getWindow();
+                Scene scene = new Scene(root);
+                stage.setScene(scene);
+                stage.setFullScreen(true);
+                stage.show();
+
+            } catch (Exception e) {
+                e.printStackTrace();
+                mostrarErro("Erro ao deslogar.");
+            }
         }
-    }
 
     // placeholders (depois liga com API de comanda)
     @FXML private void onBuscarComanda(ActionEvent event) { mostrarSucesso("Comanda encontrada!"); }
