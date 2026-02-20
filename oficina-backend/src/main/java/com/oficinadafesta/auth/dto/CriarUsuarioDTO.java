@@ -1,16 +1,21 @@
 package com.oficinadafesta.auth.dto;
 
+import com.oficinadafesta.enums.AreaTipo;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
 import lombok.Setter;
 
 @Getter
 @Setter
-public class LoginDTO {
+public class CriarUsuarioDTO {
 
     @NotBlank
     private String usuario;
 
     @NotBlank
     private String senha;
+
+    @NotNull
+    private AreaTipo setor;
 }

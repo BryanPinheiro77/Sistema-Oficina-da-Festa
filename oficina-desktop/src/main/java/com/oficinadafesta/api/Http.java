@@ -14,11 +14,17 @@ public class Http {
     private final HttpClient client;
     private final ObjectMapper mapper;
 
+    private String bearerToken;
+
+    public void setBearerToken(String token) {
+        this.bearerToken = token;
+    }
+
     public Http(String baseUrl) {
-        this.baseUrl = baseUrl.endsWith("/") ? baseUrl.substring(0, baseUrl.length()-1) : baseUrl;
+        this.baseUrl = baseUrl.endsWith("/") ? baseUrl.substring(0, baseUrl.length() - 1) : baseUrl;
         this.client = HttpClient.newHttpClient();
         this.mapper = new ObjectMapper();
-        this.mapper.registerModule(new JavaTimeModule()); // LocalDateTime etc.
+        this.mapper.registerModule(new JavaTimeModule());
     }
 
     private URI uri(String path) {
@@ -26,11 +32,20 @@ public class Http {
         return URI.create(baseUrl + p);
     }
 
-    public <T> T get(String path, Class<T> responseType) throws Exception {
-        HttpRequest req = HttpRequest.newBuilder()
+    private HttpRequest.Builder baseRequest(String path) {
+        HttpRequest.Builder b = HttpRequest.newBuilder()
                 .uri(uri(path))
+                .header("Accept", "application/json");
+
+        if (bearerToken != null && !bearerToken.isBlank()) {
+            b.header("Authorization", "Bearer " + bearerToken);
+        }
+        return b;
+    }
+
+    public <T> T get(String path, Class<T> responseType) throws Exception {
+        HttpRequest req = baseRequest(path)
                 .GET()
-                .header("Accept", "application/json")
                 .build();
 
         HttpResponse<String> res = client.send(req, HttpResponse.BodyHandlers.ofString());
@@ -43,11 +58,9 @@ public class Http {
     public <T> T post(String path, Object body, Class<T> responseType) throws Exception {
         String json = mapper.writeValueAsString(body);
 
-        HttpRequest req = HttpRequest.newBuilder()
-                .uri(uri(path))
+        HttpRequest req = baseRequest(path)
                 .POST(HttpRequest.BodyPublishers.ofString(json))
                 .header("Content-Type", "application/json")
-                .header("Accept", "application/json")
                 .build();
 
         HttpResponse<String> res = client.send(req, HttpResponse.BodyHandlers.ofString());
@@ -55,7 +68,6 @@ public class Http {
             throw new RuntimeException("HTTP " + res.statusCode() + " - " + res.body());
         }
 
-        // Alguns endpoints podem retornar texto simples (login retorna string/setor)
         if (responseType == String.class) {
             return responseType.cast(res.body().replace("\"", ""));
         }

@@ -8,6 +8,8 @@ public class AppContext {
     public final ClienteApi clienteApi;
     public final ProdutoApi produtoApi;
     public final PedidoApi pedidoApi;
+    public String accessToken;
+    public String setor;
 
     public AppContext(String baseUrl) {
         this.http = new Http(baseUrl);
@@ -15,5 +17,11 @@ public class AppContext {
         this.clienteApi = new ClienteApi(http);
         this.produtoApi = new ProdutoApi(http);
         this.pedidoApi = new PedidoApi(http);
+    }
+
+    public void clearSession() {
+        this.accessToken = null;
+        this.setor = null;
+        this.http.setBearerToken(null);
     }
 }

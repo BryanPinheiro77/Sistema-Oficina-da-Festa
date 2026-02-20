@@ -6,6 +6,7 @@ public class PedidoItemRequestDTO {
     public String observacao;
 
     public PedidoItemRequestDTO() {}
+
     public PedidoItemRequestDTO(Long produtoId, Integer quantidade, String observacao) {
         this.produtoId = produtoId;
         this.quantidade = quantidade;

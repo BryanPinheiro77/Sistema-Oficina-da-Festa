@@ -1,5 +1,6 @@
 package com.oficinadafesta.api.dto;
 
+
 public class ClienteDTO {
     public Long id;
     public String nome;
