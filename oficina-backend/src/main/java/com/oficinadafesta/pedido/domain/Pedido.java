@@ -2,13 +2,14 @@ package com.oficinadafesta.pedido.domain;
 
 import com.oficinadafesta.cliente.domain.Cliente;
 import com.oficinadafesta.comanda.domain.Comanda;
-import com.oficinadafesta.enums.FormaPagamento;
+import com.oficinadafesta.pagamento.domain.Pagamento;
 import com.oficinadafesta.enums.StatusPedido;
 import jakarta.persistence.*;
 import lombok.*;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 
 @Getter
@@ -20,57 +21,58 @@ public class Pedido {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private long id;
+    private Long id;
 
-    @ManyToOne
-    @JoinColumn(name = "cliente_id", nullable = false)
+    @ManyToOne(optional = false)
     private Cliente cliente;
 
-    // Outros campos de entrega...
     private boolean paraEntrega;
     private String enderecoEntrega;
     private LocalDateTime horarioEntrega;
 
-    @Enumerated(EnumType.STRING)
-    private FormaPagamento formaPagamento;
-
-    // Utilize BigDecimal para valores monetários
-    private BigDecimal taxaEntrega;
-    private BigDecimal valorTotal;
-    private boolean pagamentoConfirmado;
-
     @Column(nullable = false)
-    private LocalDateTime criadoEm;
+    private LocalDateTime criadoEm = LocalDateTime.now();
 
-    @Column(nullable = false)
     @Enumerated(EnumType.STRING)
-    private StatusPedido status;
-
-    @OneToMany(mappedBy = "pedido", cascade = CascadeType.ALL)
-    private List<ItemPedido> itens;
-
-    // Método para calcular o total do pedido
-    public BigDecimal getTotal() {
-        BigDecimal total = BigDecimal.ZERO;
-        if (itens != null) {
-            for (ItemPedido item : itens) {
-                // Supondo que o preço do produto esteja em double, convertemos:
-                BigDecimal preco = item.getProduto().getPreco();
-                BigDecimal quantidade = BigDecimal.valueOf(item.getQuantidade());
-                total = total.add(preco.multiply(quantidade));
-            }
-        }
-        // Se taxaEntrega é BigDecimal, adicione diretamente:
-        if (taxaEntrega != null) {
-            total = total.add(taxaEntrega);
-        }
-        return total;
-    }
+    @Column(nullable = false)
+    private StatusPedido status = StatusPedido.PENDENTE;
 
     @Column(precision = 10, scale = 2)
-    private BigDecimal valorPago = BigDecimal.ZERO;
+    private BigDecimal taxaEntrega = BigDecimal.ZERO;
+
+    @OneToMany(mappedBy = "pedido", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<ItemPedido> itens = new ArrayList<>();
 
     @ManyToOne
-    @JoinColumn(name = "comanda_id")
-    private Comanda comanda;
+    private Comanda comanda; // null para pedidos online
+
+    @OneToMany(mappedBy = "pedido")
+    private List<Pagamento> pagamentos = new ArrayList<>();
+
+    // =========================
+    // Regras de domínio
+    // =========================
+
+    public BigDecimal calcularTotal() {
+        BigDecimal total = BigDecimal.ZERO;
+
+        for (ItemPedido item : itens) {
+            BigDecimal preco = item.getProduto().getPreco();
+            BigDecimal quantidade = BigDecimal.valueOf(item.getQuantidade());
+            total = total.add(preco.multiply(quantidade));
+        }
+
+        return total.add(taxaEntrega != null ? taxaEntrega : BigDecimal.ZERO);
+    }
+
+    public boolean possuiComanda() {
+        return this.comanda != null;
+    }
+
+    public boolean estaPago() {
+        return pagamentos.stream()
+                .map(Pagamento::getValor)
+                .reduce(BigDecimal.ZERO, BigDecimal::add)
+                .compareTo(calcularTotal()) >= 0;
+    }
 }
