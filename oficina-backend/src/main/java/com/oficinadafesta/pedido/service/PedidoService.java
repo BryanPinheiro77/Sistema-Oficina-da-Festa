@@ -11,16 +11,13 @@ import com.oficinadafesta.enums.StatusPedido;
 import com.oficinadafesta.enums.TipoEntrega;
 import com.oficinadafesta.pedido.domain.ItemPedido;
 import com.oficinadafesta.pedido.domain.Pedido;
-import com.oficinadafesta.pedido.dto.AdicionarPedidoCafeDTO;
-import com.oficinadafesta.pedido.dto.PedidoCaixaDTO;
-import com.oficinadafesta.pedido.dto.PedidoItemRequestDTO;
-import com.oficinadafesta.pedido.dto.PedidoRequestDTO;
-import com.oficinadafesta.pedido.dto.PedidoResumoDTO;
-import com.oficinadafesta.pedido.dto.PedidoSetorResponseDTO;
+import com.oficinadafesta.pedido.dto.*;
 import com.oficinadafesta.pedido.repository.ItemPedidoRepository;
 import com.oficinadafesta.pedido.repository.PedidoRepository;
 import com.oficinadafesta.produto.domain.Produto;
 import com.oficinadafesta.produto.repository.ProdutoRepository;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
@@ -33,6 +30,8 @@ import java.util.stream.Collectors;
 
 @Service
 public class PedidoService {
+
+    private static final Logger log = LoggerFactory.getLogger(PedidoService.class);
 
     private final PedidoRepository pedidoRepository;
     private final ProdutoRepository produtoRepository;
@@ -52,7 +51,14 @@ public class PedidoService {
         this.comandaRepository = comandaRepository;
     }
 
+    // =========================================================
+    // Pedido "normal" (cliente)
+    // =========================================================
+
     public Pedido criarPedido(PedidoRequestDTO dto) {
+        log.info("Criando pedido: clienteId={}, tipoEntrega={}, formaPagamento={}, distanciaKm={}",
+                dto.getClienteId(), dto.getTipoEntrega(), dto.getFormaPagamento(), dto.getDistanciaEntregaKm());
+
         Cliente cliente = clienteRepository.findById(dto.getClienteId())
                 .orElseThrow(() -> new RuntimeException("Cliente não encontrado com ID: " + dto.getClienteId()));
 
@@ -64,11 +70,9 @@ public class PedidoService {
         pedido.setParaEntrega(dto.isParaEntrega());
         pedido.setEnderecoEntrega(dto.getEnderecoEntrega());
 
-        // Calcular taxa de entrega
         BigDecimal taxaEntrega = calcularTaxaEntregaPorDistancia(dto.getDistanciaEntregaKm());
         pedido.setTaxaEntrega(taxaEntrega);
 
-        // Adicionar itens (AGORA: PedidoItemRequestDTO)
         List<ItemPedido> itens = dto.getItens().stream().map(itemDTO -> {
             Produto produto = produtoRepository.findById(itemDTO.getProdutoId())
                     .orElseThrow(() -> new RuntimeException("Produto não encontrado: " + itemDTO.getProdutoId()));
@@ -77,45 +81,49 @@ public class PedidoService {
             item.setProduto(produto);
             item.setQuantidade(itemDTO.getQuantidade());
             item.setPedido(pedido);
-
-            // Se você tiver campo "observacao" em ItemPedido (domain), descomente:
-            // item.setObservacao(itemDTO.getObservacao());
-
-            // Status inicial do item (se fizer sentido no teu fluxo de pedido normal)
-            // item.setStatus(StatusItemPedido.PENDENTE);
-
+            // item.setStatus(StatusItemPedido.PENDENTE); // default já é pendente no domain
             return item;
         }).toList();
 
         pedido.setItens(itens);
 
-        BigDecimal total = pedido.getTotal(); // assume que getTotal() já soma itens + taxa, se houver
-        BigDecimal valorPago;
-
-        if (dto.getTipoEntrega() == TipoEntrega.RETIRADA) {
-            valorPago = switch (dto.getFormaPagamento()) {
-                case PIX -> total.multiply(BigDecimal.valueOf(0.5));
-                case CARTAO -> BigDecimal.ZERO;
-                default -> total;
-            };
-        } else {
-            valorPago = total; // entrega → pagamento total
-        }
+        BigDecimal total = pedido.getTotal();
+        BigDecimal valorPago = calcularValorPagoInicial(dto, total);
 
         pedido.setValorPago(valorPago);
         pedido.setPagamentoConfirmado(valorPago.compareTo(total) >= 0);
 
-        return pedidoRepository.save(pedido);
+        Pedido salvo = pedidoRepository.save(pedido);
+
+        log.info("Pedido criado: pedidoId={}, total={}, valorPago={}, confirmado={}, itens={}",
+                salvo.getId(), total, valorPago, salvo.isPagamentoConfirmado(),
+                salvo.getItens() != null ? salvo.getItens().size() : 0);
+
+        return salvo;
+    }
+
+    private BigDecimal calcularValorPagoInicial(PedidoRequestDTO dto, BigDecimal total) {
+        if (dto.getTipoEntrega() == TipoEntrega.RETIRADA) {
+            return switch (dto.getFormaPagamento()) {
+                case PIX -> total.multiply(BigDecimal.valueOf(0.5));
+                case CARTAO -> BigDecimal.ZERO;
+                default -> total;
+            };
+        }
+        // entrega → pagamento total
+        return total;
     }
 
     private BigDecimal calcularTaxaEntregaPorDistancia(double distanciaKm) {
         if (distanciaKm <= 1.0) return BigDecimal.valueOf(5.00);
         if (distanciaKm <= 2.0) return BigDecimal.valueOf(7.50);
         if (distanciaKm <= 3.0) return BigDecimal.valueOf(10.00);
-
-        // 10 reais + 2.50 por km extra além de 3km
         return BigDecimal.valueOf(10.00 + (distanciaKm - 3.0) * 2.50);
     }
+
+    // =========================================================
+    // Consultas gerais
+    // =========================================================
 
     public List<Pedido> listarTodos() {
         return pedidoRepository.findAll();
@@ -123,6 +131,11 @@ public class PedidoService {
 
     public List<Pedido> listarPorStatus(StatusPedido status) {
         return pedidoRepository.findByStatus(status);
+    }
+
+    public Pedido buscarPorId(Long id) {
+        return pedidoRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Pedido não encontrado com ID: " + id));
     }
 
     public Map<AreaTipo, List<ItemPedido>> separarItensPorSetor(Pedido pedido) {
@@ -141,27 +154,54 @@ public class PedidoService {
         return totalItens.add(pedido.getTaxaEntrega());
     }
 
+    // =========================================================
+    // Alterações de status/pagamento
+    // =========================================================
+
     public Pedido atualizarStatus(Long pedidoId, StatusPedido novoStatus) {
         Pedido pedido = pedidoRepository.findById(pedidoId)
                 .orElseThrow(() -> new RuntimeException("Pedido não encontrado com ID: " + pedidoId));
 
+        StatusPedido anterior = pedido.getStatus();
         pedido.setStatus(novoStatus);
-        return pedidoRepository.save(pedido);
+
+        Pedido salvo = pedidoRepository.save(pedido);
+
+        log.info("Status pedido atualizado: pedidoId={}, de={} para={}", pedidoId, anterior, novoStatus);
+        return salvo;
     }
 
     public Pedido confirmarPagamento(Long pedidoId, BigDecimal valorPago) {
         Pedido pedido = pedidoRepository.findById(pedidoId)
                 .orElseThrow(() -> new RuntimeException("Pedido não encontrado com ID: " + pedidoId));
 
+        BigDecimal total = pedido.getTotal();
+
         pedido.setValorPago(valorPago);
-        pedido.setPagamentoConfirmado(true);
-        return pedidoRepository.save(pedido);
+        pedido.setPagamentoConfirmado(valorPago.compareTo(total) >= 0);
+
+        Pedido salvo = pedidoRepository.save(pedido);
+
+        log.info("Pagamento atualizado: pedidoId={}, valorPago={}, total={}, confirmado={}",
+                pedidoId, valorPago, total, salvo.isPagamentoConfirmado());
+
+        return salvo;
     }
 
-    public Pedido buscarPorId(Long id) {
-        return pedidoRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Pedido não encontrado com ID: " + id));
+    public void atualizarStatusItem(Long idItem, StatusItemPedido status) {
+        ItemPedido item = itemPedidoRepository.findById(idItem)
+                .orElseThrow(() -> new RuntimeException("Item não encontrado"));
+
+        StatusItemPedido anterior = item.getStatus();
+        item.setStatus(status);
+        itemPedidoRepository.save(item);
+
+        log.info("Status item atualizado: itemId={}, de={} para={}", idItem, anterior, status);
     }
+
+    // =========================================================
+    // Setor: fila por setor (DTO)
+    // =========================================================
 
     public List<PedidoSetorResponseDTO> listarPedidosPorSetor(AreaTipo setor) {
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
@@ -189,23 +229,20 @@ public class PedidoService {
                 .toList();
     }
 
-    public void atualizarStatusItem(Long idItem, StatusItemPedido status) {
-        ItemPedido item = itemPedidoRepository.findById(idItem)
-                .orElseThrow(() -> new RuntimeException("Item não encontrado"));
+    // =========================================================
+    // Caixa: pedido vinculado a comanda (consumo local)
+    // =========================================================
 
-        item.setStatus(status);
-        itemPedidoRepository.save(item);
-    }
-
-    /**
-     * Pedido vinculado a uma comanda (consumo no local).
-     * Aqui o dto.getItens() deve ser List<PedidoItemRequestDTO>.
-     */
     public void criarPedidoNoCaixa(PedidoCaixaDTO dto) {
+        log.info("Criando pedido no caixa: comanda={}, formaPagamento={}, valorPago={}, itens={}",
+                dto.getCodigoComanda(), dto.getFormaPagamento(), dto.getValorPago(),
+                dto.getItens() != null ? dto.getItens().size() : 0);
+
         Comanda comanda = comandaRepository.findByCodigo(dto.getCodigoComanda())
                 .orElseThrow(() -> new RuntimeException("Comanda não encontrada"));
 
         if (!comanda.isAtiva()) {
+            log.warn("Comanda não está ativa: codigo={}", dto.getCodigoComanda());
             throw new RuntimeException("Comanda não está ativa");
         }
 
@@ -215,7 +252,9 @@ public class PedidoService {
         pedido.setFormaPagamento(FormaPagamento.valueOf(dto.getFormaPagamento()));
         pedido.setParaEntrega(false);
         pedido.setEnderecoEntrega("PEDIDO NO CAIXA");
-        pedido.setCliente(null); // opcional
+
+        // TODO: se Pedido.cliente for NOT NULL no banco, isso vai quebrar
+        pedido.setCliente(null);
 
         BigDecimal totalPedido = BigDecimal.ZERO;
         List<ItemPedido> itens = new ArrayList<>();
@@ -230,12 +269,8 @@ public class PedidoService {
             item.setQuantidade(itemDTO.getQuantidade());
             item.setStatus(StatusItemPedido.PENDENTE);
 
-            // Se você tiver campo "observacao" em ItemPedido (domain), descomente:
-            // item.setObservacao(itemDTO.getObservacao());
-
             BigDecimal subtotal = produto.getPreco().multiply(BigDecimal.valueOf(item.getQuantidade()));
             totalPedido = totalPedido.add(subtotal);
-
             itens.add(item);
         }
 
@@ -244,13 +279,27 @@ public class PedidoService {
         pedido.setPagamentoConfirmado(dto.getValorPago().compareTo(totalPedido) >= 0);
         pedido.setComanda(comanda);
 
-        pedidoRepository.save(pedido);
+        Pedido salvo = pedidoRepository.save(pedido);
 
-        comanda.getPedidos().add(pedido);
+        // garante lista não nula
+        if (comanda.getPedidos() == null) {
+            comanda.setPedidos(new ArrayList<>());
+        }
+        comanda.getPedidos().add(salvo);
         comandaRepository.save(comanda);
+
+        log.info("Pedido no caixa criado: pedidoId={}, comanda={}, totalPedido={}, valorPago={}, confirmado={}",
+                salvo.getId(), dto.getCodigoComanda(), totalPedido, dto.getValorPago(), salvo.isPagamentoConfirmado());
     }
 
+    // =========================================================
+    // Café: adiciona pedido na comanda (NA_COMANDA)
+    // =========================================================
+
     public PedidoResumoDTO adicionarPedidoCafe(String codigoComanda, AdicionarPedidoCafeDTO dto) {
+        log.info("Adicionando pedido café na comanda: comanda={}, itens={}",
+                codigoComanda, dto.getItens() != null ? dto.getItens().size() : 0);
+
         Comanda comanda = comandaRepository.findByCodigo(codigoComanda)
                 .orElseThrow(() -> new RuntimeException("Comanda não encontrada"));
 
@@ -277,6 +326,7 @@ public class PedidoService {
 
             BigDecimal subtotal = produto.getPreco().multiply(BigDecimal.valueOf(itemDTO.getQuantidade()));
             valorTotal = valorTotal.add(subtotal);
+
             itens.add(item);
 
             PedidoResumoDTO.ItemResumoDTO resumoItem = new PedidoResumoDTO.ItemResumoDTO();
@@ -289,7 +339,11 @@ public class PedidoService {
 
         pedido.setValorTotal(valorTotal);
         pedido.setItens(itens);
-        pedidoRepository.save(pedido);
+
+        Pedido salvo = pedidoRepository.save(pedido);
+
+        log.info("Pedido café criado: pedidoId={}, comanda={}, total={}, itens={}",
+                salvo.getId(), codigoComanda, valorTotal, itens.size());
 
         PedidoResumoDTO resumo = new PedidoResumoDTO();
         resumo.setCodigoComanda(codigoComanda);
