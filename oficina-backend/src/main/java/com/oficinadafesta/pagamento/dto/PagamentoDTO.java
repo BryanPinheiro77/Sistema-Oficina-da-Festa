@@ -15,7 +15,7 @@ public record PagamentoDTO(
         @NotNull
         FormaPagamento formaPagamento,
 
-        Long pedidoId, // usadi para pagamento online
+        Long pedidoId, // usado para pagamento online
         Long comandaId // usado para pagamento presencial
 ) {}
 
