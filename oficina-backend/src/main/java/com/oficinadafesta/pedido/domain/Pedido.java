@@ -2,6 +2,7 @@ package com.oficinadafesta.pedido.domain;
 
 import com.oficinadafesta.cliente.domain.Cliente;
 import com.oficinadafesta.comanda.domain.Comanda;
+import com.oficinadafesta.enums.TipoEntrega;
 import com.oficinadafesta.pagamento.domain.Pagamento;
 import com.oficinadafesta.enums.StatusPedido;
 import jakarta.persistence.*;
@@ -36,6 +37,9 @@ public class Pedido {
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private StatusPedido status = StatusPedido.PENDENTE;
+
+    @Enumerated(EnumType.STRING)
+    private TipoEntrega tipoEntrega;
 
     @Column(precision = 10, scale = 2)
     private BigDecimal taxaEntrega = BigDecimal.ZERO;

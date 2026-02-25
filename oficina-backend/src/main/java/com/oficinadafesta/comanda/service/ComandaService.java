@@ -100,7 +100,6 @@ public class ComandaService {
         }
 
         comanda.getPedidos().clear();
-
         return comandaRepository.save(comanda);
     }
 

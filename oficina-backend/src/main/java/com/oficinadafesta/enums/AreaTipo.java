@@ -9,5 +9,6 @@ public enum AreaTipo {
     PRODUCAO_SALGADOS,
     FRITURA,
     SOBREMESAS,
-    CAFE
+    CAFE,
+    RETIRADA
 }
