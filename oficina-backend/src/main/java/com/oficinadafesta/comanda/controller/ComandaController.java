@@ -52,9 +52,6 @@ public class ComandaController {
         dto.setCodigo(String.format("%03d", comanda.getCodigo()));
         dto.setAtiva(comanda.isAtiva());
 
-        // MVP: entity não tem bloqueada hoje
-        dto.setBloqueada(false);
-
         dto.setPaga(comanda.estaPaga());
         dto.setValorTotal(comanda.calcularTotal());
 
@@ -87,7 +84,6 @@ public class ComandaController {
         ComandaResponseDTO dto = new ComandaResponseDTO();
         dto.setCodigo(String.format("%03d", comanda.getCodigo()));
         dto.setAtiva(comanda.isAtiva());
-        dto.setBloqueada(false);
         dto.setPaga(comanda.estaPaga());
         dto.setValorTotal(comanda.calcularTotal());
 
