@@ -11,5 +11,5 @@ public interface ComandaRepository extends JpaRepository<Comanda, String> {
     Optional<Comanda> findFirstByAtivaFalseOrderByCodigoAsc();
 
     // Busca comanda pelo código
-    Optional<Comanda> findByCodigo(String codigo);
+    Optional<Comanda> findByCodigo(Integer codigo);
 }

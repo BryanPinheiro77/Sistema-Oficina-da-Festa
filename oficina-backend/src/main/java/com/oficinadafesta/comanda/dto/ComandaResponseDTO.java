@@ -10,7 +10,6 @@ import java.util.List;
 public class ComandaResponseDTO {
     private String codigo;
     private boolean ativa;
-    private boolean bloqueada;
     private boolean paga;
     private BigDecimal valorTotal;
     private List<PedidoResumoDTO> pedidos;

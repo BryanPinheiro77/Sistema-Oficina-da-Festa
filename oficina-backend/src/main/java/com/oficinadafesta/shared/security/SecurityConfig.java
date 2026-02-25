@@ -14,9 +14,11 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 public class SecurityConfig {
 
     private final JwtAuthFilter jwtAuthFilter;
+    private final DeviceAuthFilter deviceAuthFilter;
 
-    public SecurityConfig(JwtAuthFilter jwtAuthFilter) {
+    public SecurityConfig(JwtAuthFilter jwtAuthFilter, DeviceAuthFilter deviceAuthFilter) {
         this.jwtAuthFilter = jwtAuthFilter;
+        this.deviceAuthFilter = deviceAuthFilter;
     }
 
     @Bean
@@ -38,11 +40,17 @@ public class SecurityConfig {
                         // swagger
                         .requestMatchers("/swagger-ui/**", "/v3/api-docs/**").permitAll()
 
+                        // catraca: não usa JWT (usa X-Device-Key no filtro)
+                        .requestMatchers("/catraca/**").permitAll()
+
                         // todo o resto precisa JWT
                         .anyRequest().authenticated()
                 )
 
-                // pluga filtro JWT
+                // DeviceAuthFilter precisa rodar antes do JwtAuthFilter
+                .addFilterBefore(deviceAuthFilter, JwtAuthFilter.class)
+
+                // JWT antes do UsernamePasswordAuthenticationFilter
                 .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
