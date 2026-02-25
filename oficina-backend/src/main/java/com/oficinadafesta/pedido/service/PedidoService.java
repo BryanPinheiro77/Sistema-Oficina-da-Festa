@@ -104,7 +104,7 @@ public class PedidoService {
 
         pedido.setItens(itens);
 
-        BigDecimal total = pedido.getTotal();
+        BigDecimal total = pedido.calcularTotal();
         BigDecimal valorPago = calcularValorPagoInicial(dto.getTipoEntrega(), dto.getFormaPagamento(), total);
 
         pedido.setValorPago(valorPago);
@@ -215,7 +215,7 @@ public class PedidoService {
                         p.getStatus(),
                         p.getTipoEntrega() == TipoEntrega.ENTREGA ? p.getEnderecoEntrega() : null,
                         p.getHorarioEntrega(),
-                        p.getTotal(),
+                        p.calcularTotal(),
                         p.getItens().stream()
                                 .map(i -> new PedidoExpedicaoDTO.ItemDTO(
                                         i.getProduto().getNome(),
@@ -254,7 +254,7 @@ public class PedidoService {
         Pedido pedido = pedidoRepository.findById(pedidoId)
                 .orElseThrow(() -> new EntityNotFoundException("Pedido não encontrado com ID: " + pedidoId));
 
-        BigDecimal total = pedido.getTotal();
+        BigDecimal total = pedido.calcularTotal();
 
         pedido.setValorPago(valorPago);
         pedido.setPagamentoConfirmado(valorPago.compareTo(total) >= 0);

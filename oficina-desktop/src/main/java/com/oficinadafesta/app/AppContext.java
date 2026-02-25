@@ -8,6 +8,9 @@ public class AppContext {
     public final ClienteApi clienteApi;
     public final ProdutoApi produtoApi;
     public final PedidoApi pedidoApi;
+    public final CaixaApi caixaApi;
+
+
     public String accessToken;
     public String setor;
 
@@ -17,6 +20,7 @@ public class AppContext {
         this.clienteApi = new ClienteApi(http);
         this.produtoApi = new ProdutoApi(http);
         this.pedidoApi = new PedidoApi(http);
+        this.caixaApi = new CaixaApi(http);
     }
 
     public void clearSession() {

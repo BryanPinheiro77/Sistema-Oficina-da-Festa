@@ -36,6 +36,7 @@ public class PedidoController {
 
     // =========================================================
     // 1) PEDIDOS GERAIS (Caixa/Admin)
+    // - pedido normal: ENTREGA/RETIRADA/IMEDIATA
     // =========================================================
 
     @PreAuthorize(Roles.CAIXA_OU_ADMIN)
@@ -146,7 +147,6 @@ public class PedidoController {
 
     // =========================================================
     // 4) SETORES atualizam status do item (produção)
-    // - validação forte está no service (setor só altera item do próprio setor)
     // =========================================================
 
     @PreAuthorize(Roles.SETORES_PRODUCAO)
@@ -157,18 +157,7 @@ public class PedidoController {
     }
 
     // =========================================================
-    // 5) FLUXO DO CAIXA (comanda / consumo local)
-    // =========================================================
-
-    @PreAuthorize(Roles.CAIXA_OU_ADMIN)
-    @PostMapping("/caixa")
-    public ResponseEntity<Void> criarPedidoNoCaixa(@RequestBody PedidoCaixaDTO dto){
-        pedidoService.criarPedidoNoCaixa(dto);
-        return ResponseEntity.status(HttpStatus.CREATED).build();
-    }
-
-    // =========================================================
-    // 6) CAFÉ adiciona pedido na comanda
+    // 5) CAFÉ adiciona pedido na comanda
     // =========================================================
 
     @PreAuthorize(Roles.CAFE_CAIXA_ADMIN)
@@ -178,8 +167,9 @@ public class PedidoController {
         PedidoResumoDTO resumo = pedidoService.adicionarPedidoCafe(codigo, dto);
         return ResponseEntity.ok(resumo);
     }
+
     // =========================================================
-    // 7) Pedidos para entrega ou retirada
+    // 6) Pedidos para expedição (ENTREGA/RETIRADA/IMEDIATA)
     // =========================================================
 
     @PreAuthorize(Roles.EXPEDICAO)

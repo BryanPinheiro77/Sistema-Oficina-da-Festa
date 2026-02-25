@@ -1,14 +1,16 @@
 package com.oficinadafesta.ui.caixa;
 
+import com.oficinadafesta.api.CaixaApi;
 import com.oficinadafesta.api.ClienteApi;
-import com.oficinadafesta.api.PedidoApi;
 import com.oficinadafesta.api.ProdutoApi;
 import com.oficinadafesta.api.dto.ClienteDTO;
+import com.oficinadafesta.api.dto.ComandaDetalhadaResponseDTO;
+import com.oficinadafesta.api.dto.PagamentoComandaDTO;
 import com.oficinadafesta.api.dto.PedidoItemRequestDTO;
 import com.oficinadafesta.api.dto.PedidoRequestDTO;
 import com.oficinadafesta.api.dto.ProdutoDTO;
-import com.oficinadafesta.ui.model.ItemPedidoRow;
 import com.oficinadafesta.app.AppContext;
+import com.oficinadafesta.ui.model.ItemPedidoRow;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
@@ -18,7 +20,6 @@ import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.stage.Stage;
 
-import java.io.IOException;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
@@ -30,13 +31,15 @@ public class CaixaController {
     private final AppContext ctx;
     private final ClienteApi clienteApi;
     private final ProdutoApi produtoApi;
-    private final PedidoApi pedidoApi;
+    private final CaixaApi caixaApi;
 
     public CaixaController(AppContext ctx) {
         this.ctx = ctx;
         this.clienteApi = ctx.clienteApi;
         this.produtoApi = ctx.produtoApi;
-        this.pedidoApi = ctx.pedidoApi;
+
+        // cria CaixaApi usando o mesmo Http/token do AppContext
+        this.caixaApi = new CaixaApi(ctx.http);
     }
 
     private ClienteDTO clienteAtual;
@@ -64,7 +67,7 @@ public class CaixaController {
 
     @FXML private Button logoutButton;
 
-    // Aba finalizar comanda (depois conecta via API)
+    // Aba finalizar comanda
     @FXML private TextField codigoComandaField;
     @FXML private TableView<ItemPedidoRow> comandaItensTable;
     @FXML private TableColumn<ItemPedidoRow, String> comandaProdutoColumn;
@@ -72,6 +75,8 @@ public class CaixaController {
     @FXML private TableColumn<ItemPedidoRow, String> comandaPrecoColumn;
     @FXML private Label totalComandaLabel;
     @FXML private ComboBox<String> formaPagamentoFinalComboBox;
+
+    private ComandaDetalhadaResponseDTO comandaAtual;
 
     @FXML
     public void initialize() {
@@ -92,7 +97,9 @@ public class CaixaController {
         retiradaAgendadaRadio.setToggleGroup(retiradaToggleGroup);
         entregaRadio.setToggleGroup(retiradaToggleGroup);
 
-        // carrega produtos da API
+        // defaults (opcional)
+        retiradaImediataRadio.setSelected(true);
+
         carregarProdutos();
     }
 
@@ -109,6 +116,10 @@ public class CaixaController {
             e.printStackTrace();
         }
     }
+
+    // =========================================================
+    // CLIENTE
+    // =========================================================
 
     @FXML
     private void onBuscarCliente(ActionEvent event) {
@@ -135,6 +146,41 @@ public class CaixaController {
             mostrarErro("Cliente não encontrado. Preencha os dados para criar novo.");
         }
     }
+
+    @FXML
+    private void onCriarNovoCliente(ActionEvent event) {
+        String nome = nomeField.getText();
+        String telefone = telefoneField.getText();
+        String cep = cepField.getText();
+        String endereco = enderecoField.getText();
+
+        if (nome == null || nome.isBlank() ||
+                telefone == null || telefone.isBlank() ||
+                cep == null || cep.isBlank() ||
+                endereco == null || endereco.isBlank()) {
+            mostrarErro("Preencha todos os campos para cadastrar o cliente.");
+            return;
+        }
+
+        ClienteDTO novo = new ClienteDTO();
+        novo.nome = nome;
+        novo.telefone = telefone;
+        novo.cep = cep;
+        novo.enderecoCompleto = endereco;
+
+        try {
+            ClienteDTO criado = clienteApi.criar(novo);
+            clienteAtual = criado;
+            mostrarSucesso("Novo cliente criado com sucesso!");
+        } catch (Exception e) {
+            mostrarErro("Erro ao criar o cliente no servidor.");
+            e.printStackTrace();
+        }
+    }
+
+    // =========================================================
+    // ITENS DO PEDIDO (tabela)
+    // =========================================================
 
     @FXML
     private void onAdicionarItem(ActionEvent event) {
@@ -176,6 +222,19 @@ public class CaixaController {
         campoObservacaoItem.clear();
     }
 
+    private ProdutoDTO buscarProdutoPorNome(String nomeProduto) {
+        for (ProdutoDTO produto : produtosDisponiveis) {
+            if (produto.nome != null && produto.nome.equalsIgnoreCase(nomeProduto)) {
+                return produto;
+            }
+        }
+        return null;
+    }
+
+    // =========================================================
+    // CRIAR PEDIDO NORMAL (CAIXA -> /caixa/pedidos)
+    // =========================================================
+
     @FXML
     private void onCriarPedido(ActionEvent event) {
         if (clienteAtual == null || clienteAtual.id == null) {
@@ -199,11 +258,22 @@ public class CaixaController {
         pedido.formaPagamento = formaPagamentoStr.toUpperCase();
 
         RadioButton selecionado = (RadioButton) retiradaToggleGroup.getSelectedToggle();
-        boolean agendar = selecionado != null && selecionado == retiradaAgendadaRadio;
+        if (selecionado == null) {
+            mostrarErro("Selecione o tipo: retirada imediata, retirada agendada ou entrega.");
+            return;
+        }
 
-        if (agendar) {
+        // ✅ Mapeamento correto dos 3 radios
+        if (selecionado == retiradaImediataRadio) {
+            pedido.tipoEntrega = "IMEDIATA";
+            pedido.paraEntrega = false;
+            pedido.enderecoEntrega = null;
+            pedido.dataRetirada = null;
+
+        } else if (selecionado == retiradaAgendadaRadio) {
             pedido.tipoEntrega = "RETIRADA";
             pedido.paraEntrega = false;
+            pedido.enderecoEntrega = null;
 
             LocalDate data = dataRetiradaPicker.getValue();
             String horaTexto = horaRetiradaField.getText();
@@ -222,11 +292,23 @@ public class CaixaController {
                 return;
             }
 
-        } else {
-            // se não agendar, você estava tratando como ENTREGA
+        } else if (selecionado == entregaRadio) {
             pedido.tipoEntrega = "ENTREGA";
             pedido.paraEntrega = true;
-            pedido.enderecoEntrega = enderecoField.getText();
+
+            String endereco = enderecoField.getText();
+            if (endereco == null || endereco.isBlank()) {
+                mostrarErro("Informe o endereço de entrega.");
+                return;
+            }
+            pedido.enderecoEntrega = endereco;
+
+            // se você já tiver distância no DTO, você preenche aqui (ex: pedido.distanciaEntregaKm)
+            // senão deixa o backend calcular depois.
+
+        } else {
+            mostrarErro("Tipo de entrega inválido.");
+            return;
         }
 
         List<PedidoItemRequestDTO> itens = new ArrayList<>();
@@ -240,7 +322,9 @@ public class CaixaController {
         pedido.itens = itens;
 
         try {
-            pedidoApi.criarPedido(pedido);
+            // ✅ agora chama /caixa/pedidos
+            caixaApi.criarPedidoNormal(pedido);
+
             mostrarSucesso("Pedido criado com sucesso!");
             limparCamposPedido();
         } catch (Exception e) {
@@ -249,84 +333,143 @@ public class CaixaController {
         }
     }
 
-    private ProdutoDTO buscarProdutoPorNome(String nomeProduto) {
-        for (ProdutoDTO produto : produtosDisponiveis) {
-            if (produto.nome != null && produto.nome.equalsIgnoreCase(nomeProduto)) {
-                return produto;
-            }
-        }
-        return null;
-    }
+    // =========================================================
+    // COMANDA (aba finalizar comanda)
+    // =========================================================
 
     @FXML
-    private void onCriarNovoCliente(ActionEvent event) {
-        String nome = nomeField.getText();
-        String telefone = telefoneField.getText();
-        String cep = cepField.getText();
-        String endereco = enderecoField.getText();
-
-        if (nome == null || nome.isBlank() ||
-                telefone == null || telefone.isBlank() ||
-                cep == null || cep.isBlank() ||
-                endereco == null || endereco.isBlank()) {
-            mostrarErro("Preencha todos os campos para cadastrar o cliente.");
+    private void onBuscarComanda(ActionEvent event) {
+        String codigo = codigoComandaField.getText();
+        if (codigo == null || codigo.isBlank()) {
+            mostrarErro("Informe o código da comanda.");
             return;
         }
 
-        ClienteDTO novo = new ClienteDTO();
-        novo.nome = nome;
-        novo.telefone = telefone;
-        novo.cep = cep;
-        novo.enderecoCompleto = endereco;
-
         try {
-            ClienteDTO criado = clienteApi.criar(novo);
-            clienteAtual = criado;
-            mostrarSucesso("Novo cliente criado com sucesso!");
+            // ✅ detalhes inclui itens
+            comandaAtual = caixaApi.detalhesComanda(codigo.trim());
+
+            comandaItensTable.getItems().clear();
+
+            if (comandaAtual != null && comandaAtual.pedidos != null) {
+                for (ComandaDetalhadaResponseDTO.PedidoDTO p : comandaAtual.pedidos) {
+                    if (p.itens == null) continue;
+
+                    for (ComandaDetalhadaResponseDTO.ItemDTO i : p.itens) {
+                        ItemPedidoRow row = new ItemPedidoRow(
+                                null, // sem produtoId no detalhe (ok)
+                                i.nomeProduto,
+                                i.quantidade != null ? i.quantidade : 0,
+                                i.preco,
+                                null
+                        );
+                        comandaItensTable.getItems().add(row);
+                    }
+                }
+            }
+
+            String totalStr = (comandaAtual != null && comandaAtual.total != null)
+                    ? "R$ " + comandaAtual.total
+                    : "R$ 0.00";
+            totalComandaLabel.setText(totalStr);
+
+            mostrarSucesso("Comanda carregada: " + (comandaAtual != null ? comandaAtual.codigo : codigo));
+
         } catch (Exception e) {
-            mostrarErro("Erro ao criar o cliente no servidor.");
+            mostrarErro("Erro ao buscar comanda no servidor.");
             e.printStackTrace();
         }
     }
 
-        @FXML
-        private void deslogar() {
-            try {
-                // limpa token/setor e remove bearer
-                ctx.clearSession();
-
-                FXMLLoader loader = new FXMLLoader(getClass().getResource("/ui/auth/login.fxml"));
-
-                // IMPORTANTÍSSIMO: injetar AppContext no AuthController
-                loader.setControllerFactory(type -> {
-                    try {
-                        if (type == com.oficinadafesta.ui.auth.AuthController.class) {
-                            return type.getConstructor(com.oficinadafesta.app.AppContext.class).newInstance(ctx);
-                        }
-                        return type.getDeclaredConstructor().newInstance();
-                    } catch (Exception e) {
-                        throw new RuntimeException(e);
-                    }
-                });
-
-                Parent root = loader.load();
-
-                Stage stage = (Stage) logoutButton.getScene().getWindow();
-                Scene scene = new Scene(root);
-                stage.setScene(scene);
-                stage.setFullScreen(true);
-                stage.show();
-
-            } catch (Exception e) {
-                e.printStackTrace();
-                mostrarErro("Erro ao deslogar.");
-            }
+    @FXML
+    private void onConfirmarPagamento(ActionEvent event) {
+        String codigo = codigoComandaField.getText();
+        if (codigo == null || codigo.isBlank()) {
+            mostrarErro("Informe o código da comanda.");
+            return;
         }
 
-    // placeholders (depois liga com API de comanda)
-    @FXML private void onBuscarComanda(ActionEvent event) { mostrarSucesso("Comanda encontrada!"); }
-    @FXML private void onConfirmarPagamento(ActionEvent event) { mostrarSucesso("Pagamento confirmado com sucesso!"); }
-    @FXML private void onTipoEntregaSelecionado(ActionEvent event) {}
+        String forma = formaPagamentoFinalComboBox.getValue();
+        if (forma == null || forma.isBlank()) {
+            mostrarErro("Selecione a forma de pagamento.");
+            return;
+        }
+
+        try {
+            // ⚠️ depende do seu PagamentoComandaDTO real (desktop)
+            PagamentoComandaDTO dto = new PagamentoComandaDTO();
+            dto.formaPagamento = forma.toUpperCase();
+
+            caixaApi.pagarComanda(codigo.trim(), dto);
+
+            mostrarSucesso("Pagamento enviado com sucesso!");
+            limparCamposComanda();
+
+        } catch (Exception e) {
+            mostrarErro("Erro ao confirmar pagamento no servidor.");
+            e.printStackTrace();
+        }
+    }
+
+    private void limparCamposComanda() {
+        codigoComandaField.clear();
+        comandaItensTable.getItems().clear();
+        totalComandaLabel.setText("R$ 0.00");
+        formaPagamentoFinalComboBox.getSelectionModel().clearSelection();
+        comandaAtual = null;
+    }
+
+    @FXML
+    private void onTipoEntregaSelecionado(ActionEvent event) {
+        // UX: habilita/desabilita campos de data/hora conforme rádio
+        RadioButton selecionado = (RadioButton) retiradaToggleGroup.getSelectedToggle();
+
+        boolean agendada = selecionado == retiradaAgendadaRadio;
+        dataRetiradaPicker.setDisable(!agendada);
+        horaRetiradaField.setDisable(!agendada);
+
+        boolean entrega = selecionado == entregaRadio;
+        enderecoField.setDisable(!entrega);
+    }
+
+    // =========================================================
+    // LOGOUT
+    // =========================================================
+
+    @FXML
+    private void deslogar() {
+        try {
+            ctx.clearSession();
+
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/ui/auth/login.fxml"));
+            loader.setControllerFactory(type -> {
+                try {
+                    if (type == com.oficinadafesta.ui.auth.AuthController.class) {
+                        return type.getConstructor(com.oficinadafesta.app.AppContext.class).newInstance(ctx);
+                    }
+                    return type.getDeclaredConstructor().newInstance();
+                } catch (Exception e) {
+                    throw new RuntimeException(e);
+                }
+            });
+
+            Parent root = loader.load();
+
+            Stage stage = (Stage) logoutButton.getScene().getWindow();
+            Scene scene = new Scene(root);
+            stage.setScene(scene);
+            stage.setFullScreen(true);
+            stage.show();
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            mostrarErro("Erro ao deslogar.");
+        }
+    }
+
+    // =========================================================
+    // Alerts / limpeza
+    // =========================================================
 
     private void mostrarErro(String msg) {
         Alert alerta = new Alert(Alert.AlertType.ERROR);
