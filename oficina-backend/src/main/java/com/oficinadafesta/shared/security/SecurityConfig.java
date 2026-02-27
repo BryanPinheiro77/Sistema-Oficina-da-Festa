@@ -15,10 +15,19 @@ public class SecurityConfig {
 
     private final JwtAuthFilter jwtAuthFilter;
     private final DeviceAuthFilter deviceAuthFilter;
+    private final RestAuthenticationEntryPoint authenticationEntryPoint;
+    private final RestAccessDeniedHandler accessDeniedHandler;
 
-    public SecurityConfig(JwtAuthFilter jwtAuthFilter, DeviceAuthFilter deviceAuthFilter) {
+    public SecurityConfig(
+            JwtAuthFilter jwtAuthFilter,
+            DeviceAuthFilter deviceAuthFilter,
+            RestAuthenticationEntryPoint authenticationEntryPoint,
+            RestAccessDeniedHandler accessDeniedHandler
+    ) {
         this.jwtAuthFilter = jwtAuthFilter;
         this.deviceAuthFilter = deviceAuthFilter;
+        this.authenticationEntryPoint = authenticationEntryPoint;
+        this.accessDeniedHandler = accessDeniedHandler;
     }
 
     @Bean
@@ -29,6 +38,12 @@ public class SecurityConfig {
                 .csrf(csrf -> csrf.disable())
                 .formLogin(form -> form.disable())
                 .httpBasic(basic -> basic.disable())
+
+                // ✅ padroniza 401 e 403 em JSON
+                .exceptionHandling(ex -> ex
+                        .authenticationEntryPoint(authenticationEntryPoint)
+                        .accessDeniedHandler(accessDeniedHandler)
+                )
 
                 .authorizeHttpRequests(auth -> auth
                         // públicas

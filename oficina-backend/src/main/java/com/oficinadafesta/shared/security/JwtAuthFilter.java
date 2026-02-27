@@ -1,11 +1,14 @@
 package com.oficinadafesta.shared.security;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.oficinadafesta.shared.exception.ErrorResponse;
 import io.jsonwebtoken.Claims;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -13,15 +16,20 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Component
 public class JwtAuthFilter extends OncePerRequestFilter {
 
     private final JwtService jwtService;
+    private final ObjectMapper objectMapper = new ObjectMapper();
 
     public JwtAuthFilter(JwtService jwtService) {
         this.jwtService = jwtService;
+        // Se você tiver problemas com LocalDateTime no JSON, usa:
+        // this.objectMapper.findAndRegisterModules();
+        this.objectMapper.findAndRegisterModules();
     }
 
     @Override
@@ -40,9 +48,8 @@ public class JwtAuthFilter extends OncePerRequestFilter {
                 Claims claims = jwtService.parseClaims(token);
 
                 String username = claims.getSubject();
-                String setor = claims.get("setor", String.class); // ex: "CAIXA"
+                String setor = claims.get("setor", String.class);
 
-                // se já tiver auth, não sobrescreve
                 if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
                     var authorities = (setor == null)
                             ? List.<SimpleGrantedAuthority>of()
@@ -57,15 +64,26 @@ public class JwtAuthFilter extends OncePerRequestFilter {
                     SecurityContextHolder.getContext().setAuthentication(authentication);
                 }
 
-            } catch (Exception ignored) {
-                // token inválido/expirado: segue sem autenticação
+            } catch (Exception ex) {
+                // ✅ Token inválido/expirado -> 401 consistente em JSON
+                ErrorResponse body = new ErrorResponse(
+                        LocalDateTime.now(),
+                        401,
+                        "UNAUTHORIZED",
+                        "Token inválido ou expirado",
+                        request.getRequestURI()
+                );
+
+                response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+                response.setContentType(MediaType.APPLICATION_JSON_VALUE);
+                objectMapper.writeValue(response.getWriter(), body);
+                return; // ✅ para aqui, não continua
             }
         }
 
         filterChain.doFilter(request, response);
     }
 
-    /** vita rodar filtro em rotas públicas (ganho de performance e evita ruído) */
     @Override
     protected boolean shouldNotFilter(HttpServletRequest request) {
         String path = request.getServletPath();
