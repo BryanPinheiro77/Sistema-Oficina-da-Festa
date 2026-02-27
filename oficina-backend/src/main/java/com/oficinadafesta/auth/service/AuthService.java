@@ -3,6 +3,7 @@ package com.oficinadafesta.auth.service;
 import com.oficinadafesta.auth.domain.Usuario;
 import com.oficinadafesta.auth.dto.AuthResponseDTO;
 import com.oficinadafesta.auth.repository.UsuarioRepository;
+import com.oficinadafesta.shared.exception.UnauthorizedException;
 import com.oficinadafesta.shared.security.JwtService;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -24,9 +25,11 @@ public class AuthService {
 
     public AuthResponseDTO login(String usuario, String senha) {
         Usuario user = usuarioRepository.findByUsuario(usuario).orElse(null);
-        if (user == null) return null;
+        if (user == null) throw new UnauthorizedException("Usuário ou senha inválidos");
 
-        if (!passwordEncoder.matches(senha, user.getSenha())) return null;
+        if (!passwordEncoder.matches(senha, user.getSenha())) {
+            throw new UnauthorizedException("Usuário ou senha inválidos");
+        }
 
         String token = jwtService.gerarToken(
                 user.getId(),

@@ -8,9 +8,9 @@ import lombok.Setter;
 @Setter
 public class LoginDTO {
 
-    @NotBlank
+    @NotBlank(message = "Usuário é obrigatório")
     private String usuario;
 
-    @NotBlank
+    @NotBlank(message = "Senha é obrigatória")
     private String senha;
 }
