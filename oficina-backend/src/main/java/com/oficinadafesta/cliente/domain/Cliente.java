@@ -19,6 +19,7 @@ public class Cliente {
     private String nome;
 
     @NotBlank
+    @Column(nullable = false, unique = true)
     private String telefone;
 
     @NotBlank
