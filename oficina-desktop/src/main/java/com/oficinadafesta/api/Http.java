@@ -10,14 +10,23 @@ import java.net.http.HttpResponse;
 
 public class Http {
 
+    public interface UnauthorizedListener {
+        void onUnauthorized(int statusCode, String body);
+    }
+
     private final String baseUrl;
     private final HttpClient client;
     private final ObjectMapper mapper;
 
     private String bearerToken;
+    private UnauthorizedListener unauthorizedListener;
 
     public void setBearerToken(String token) {
         this.bearerToken = token;
+    }
+
+    public void setUnauthorizedListener(UnauthorizedListener listener) {
+        this.unauthorizedListener = listener;
     }
 
     public Http(String baseUrl) {
@@ -43,12 +52,21 @@ public class Http {
         return b;
     }
 
+    private void handleIfUnauthorized(HttpResponse<String> res) {
+        if (res.statusCode() == 401 && unauthorizedListener != null) {
+            unauthorizedListener.onUnauthorized(res.statusCode(), res.body());
+        }
+    }
+
     public <T> T get(String path, Class<T> responseType) throws Exception {
         HttpRequest req = baseRequest(path)
                 .GET()
                 .build();
 
         HttpResponse<String> res = client.send(req, HttpResponse.BodyHandlers.ofString());
+
+        handleIfUnauthorized(res);
+
         if (res.statusCode() < 200 || res.statusCode() >= 300) {
             throw new RuntimeException("HTTP " + res.statusCode() + " - " + res.body());
         }
@@ -64,6 +82,9 @@ public class Http {
                 .build();
 
         HttpResponse<String> res = client.send(req, HttpResponse.BodyHandlers.ofString());
+
+        handleIfUnauthorized(res);
+
         if (res.statusCode() < 200 || res.statusCode() >= 300) {
             throw new RuntimeException("HTTP " + res.statusCode() + " - " + res.body());
         }

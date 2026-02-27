@@ -10,7 +10,6 @@ public class AppContext {
     public final PedidoApi pedidoApi;
     public final CaixaApi caixaApi;
 
-
     public String accessToken;
     public String setor;
 
@@ -27,5 +26,9 @@ public class AppContext {
         this.accessToken = null;
         this.setor = null;
         this.http.setBearerToken(null);
+    }
+
+    public void onUnauthorized(Http.UnauthorizedListener listener) {
+        this.http.setUnauthorizedListener(listener);
     }
 }
