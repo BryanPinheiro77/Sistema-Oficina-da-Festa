@@ -14,14 +14,12 @@ public class ComandaSeed {
     private final ComandaRepository comandaRepository;
 
     @PostConstruct
-    public void initComandas(){
-        if(comandaRepository.count() == 0){
-            for (int i = 1; i <= 999; i++){
-                String codigo = String.format("%03d", i);
+    public void initComandas() {
+        if (comandaRepository.count() == 0) {
+            for (int i = 1; i <= 999; i++) {
                 Comanda comanda = new Comanda();
-                comanda.setCodigo(codigo);
+                comanda.setCodigo(i);
                 comanda.setAtiva(true);
-                comanda.setPaga(true);
                 comandaRepository.save(comanda);
             }
             System.out.println("999 Comandas inseridas com sucesso.");
