@@ -157,7 +157,11 @@ public class ComandaService {
         List<ComandaDetalhadaResponseDTO.PedidoDTO> pedidosDTO = comanda.getPedidos().stream().map(p -> {
             ComandaDetalhadaResponseDTO.PedidoDTO pedidoDTO = new ComandaDetalhadaResponseDTO.PedidoDTO();
             pedidoDTO.setId(p.getId());
-            pedidoDTO.setFormaPagamento(p.getFormaPagamento() != null ? p.getFormaPagamento().name() : null);
+            pedidoDTO.setFormaPagamento(
+                    p.getPagamentos() != null && !p.getPagamentos().isEmpty()
+                            ? p.getPagamentos().get(0).getFormaPagamento().name()
+                            : null
+            );
 
             List<ComandaDetalhadaResponseDTO.ItemDTO> itensDTO = p.getItens().stream().map(i -> {
                 ComandaDetalhadaResponseDTO.ItemDTO itemDTO = new ComandaDetalhadaResponseDTO.ItemDTO();
