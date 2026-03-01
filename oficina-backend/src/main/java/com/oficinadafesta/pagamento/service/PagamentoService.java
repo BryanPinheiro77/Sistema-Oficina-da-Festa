@@ -8,9 +8,14 @@ import com.oficinadafesta.pagamento.dto.PagamentoResponseDTO;
 import com.oficinadafesta.pagamento.repository.PagamentoRepository;
 import com.oficinadafesta.pedido.domain.Pedido;
 import com.oficinadafesta.pedido.repository.PedidoRepository;
+import com.oficinadafesta.enums.FormaPagamento;
+
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+
 import org.springframework.stereotype.Service;
+
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -32,22 +37,12 @@ public class PagamentoService {
             Pedido pedido = pedidoRepository.findById(dto.pedidoId())
                     .orElseThrow(() -> new RuntimeException("Pedido não encontrado."));
 
-            if (pedido.possuiComanda()) {
-                throw new IllegalStateException(
-                        "Pedido vinculado à comanda deve ser pago pela comanda."
-                );
-            }
-
             pagamento.setPedido(pedido);
 
         } else if (dto.comandaId() != null) {
 
             Comanda comanda = comandaRepository.findById(dto.comandaId())
                     .orElseThrow(() -> new RuntimeException("Comanda não encontrada."));
-
-            if (!comanda.isAtiva()) {
-                throw new IllegalStateException("Comanda está fechada.");
-            }
 
             pagamento.setComanda(comanda);
 
@@ -57,7 +52,23 @@ public class PagamentoService {
             );
         }
 
-        pagamentoRepository.save(pagamento);
+        Pagamento salvo = pagamentoRepository.save(pagamento);
+
+        return new PagamentoResponseDTO(
+                salvo.getId(),
+                salvo.getValor(),
+                salvo.getFormaPagamento(),
+                salvo.getPagoEm(),
+                salvo.getPedido() != null ? salvo.getPedido().getId() : null,
+                salvo.getComanda() != null ? salvo.getComanda().getId() : null
+        );
+    }
+
+    @Transactional
+    public PagamentoResponseDTO buscarPorId(Long id) {
+
+        Pagamento pagamento = pagamentoRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Pagamento não encontrado."));
 
         return new PagamentoResponseDTO(
                 pagamento.getId(),
@@ -67,5 +78,21 @@ public class PagamentoService {
                 pagamento.getPedido() != null ? pagamento.getPedido().getId() : null,
                 pagamento.getComanda() != null ? pagamento.getComanda().getId() : null
         );
+    }
+
+    @Transactional
+    public List<PagamentoResponseDTO> listarTodos() {
+
+        return pagamentoRepository.findAll()
+                .stream()
+                .map(p -> new PagamentoResponseDTO(
+                        p.getId(),
+                        p.getValor(),
+                        p.getFormaPagamento(),
+                        p.getPagoEm(),
+                        p.getPedido() != null ? p.getPedido().getId() : null,
+                        p.getComanda() != null ? p.getComanda().getId() : null
+                ))
+                .toList();
     }
 }

@@ -5,7 +5,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.Optional;
 
-public interface ComandaRepository extends JpaRepository<Comanda, String> {
+public interface ComandaRepository extends JpaRepository<Comanda, Long> {
 
     // Busca a próxima comanda desativada (disponível) em ordem crescente
     Optional<Comanda> findFirstByAtivaFalseOrderByCodigoAsc();

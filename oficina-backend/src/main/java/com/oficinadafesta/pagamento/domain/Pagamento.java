@@ -1,44 +1,56 @@
 package com.oficinadafesta.pagamento.domain;
 
+
 import com.oficinadafesta.comanda.domain.Comanda;
 import com.oficinadafesta.pedido.domain.Pedido;
 import com.oficinadafesta.enums.FormaPagamento;
+
 import jakarta.persistence.*;
 import lombok.*;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
+
+@Entity
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-@Entity
+
+
+
 public class Pagamento {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(precision = 10, scale = 2, nullable = false)
+    @Column(nullable = false, precision = 10, scale = 2)
     private BigDecimal valor;
 
     @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
     private FormaPagamento formaPagamento;
 
+    @Column(nullable = false)
     private LocalDateTime pagoEm = LocalDateTime.now();
 
-    @ManyToOne
-    private Pedido pedido; // usado para pedido online
+    @ManyToOne(optional = true)
+    @JoinColumn(name = "pedido_id")
+    private Pedido pedido;
 
-    @ManyToOne
-    private Comanda comanda; // usado para presencial
+    @ManyToOne(optional = true)
+    @JoinColumn(name = "comanda_id")
+    private Comanda comanda;
 
     @PrePersist
     public void validarVinculo() {
         if ((pedido == null && comanda == null) ||
                 (pedido != null && comanda != null)) {
-            throw new IllegalStateException("Pagamento deve estar vinculado OU a pedido OU a comanda.");
+            throw new IllegalStateException(
+                    "Pagamento deve estar vinculado OU a pedido OU a comanda."
+            );
         }
     }
 }

@@ -6,16 +6,15 @@ import jakarta.validation.constraints.Positive;
 
 import java.math.BigDecimal;
 
-public record PagamentoDTO(
+public record PagamentoRequestDTO(
 
-        @notNull
+        @NotNull
         @Positive
         BigDecimal valor,
 
         @NotNull
         FormaPagamento formaPagamento,
 
-        Long pedidoId, // usado para pagamento online
-        Long comandaId // usado para pagamento presencial
+        Long pedidoId,
+        Long comandaId
 ) {}
-
