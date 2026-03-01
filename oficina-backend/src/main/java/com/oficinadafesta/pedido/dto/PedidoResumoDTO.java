@@ -10,7 +10,7 @@ import java.util.List;
 @Getter
 @Setter
 public class PedidoResumoDTO {
-    private String codigoComanda;
+    private Integer codigoComanda;
     private BigDecimal valorTotal;
     private List<ItemResumoDTO> itens;
 

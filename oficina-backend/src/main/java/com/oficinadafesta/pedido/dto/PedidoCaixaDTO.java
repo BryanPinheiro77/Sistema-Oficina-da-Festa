@@ -7,7 +7,7 @@ import java.util.List;
 
 @Data
 public class PedidoCaixaDTO {
-    private String codigoComanda;
+    private Integer codigoComanda;
     private List<PedidoItemRequestDTO> itens;
     private String formaPagamento;
     private BigDecimal valorPago;

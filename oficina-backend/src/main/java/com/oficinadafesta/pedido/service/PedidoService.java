@@ -411,7 +411,7 @@ public class PedidoService {
     // 7) Café: adiciona pedido na comanda (NA_COMANDA)
     // =========================================================
 
-    public PedidoResumoDTO adicionarPedidoCafe(String codigoComanda, AdicionarPedidoCafeDTO dto) {
+    public PedidoResumoDTO adicionarPedidoCafe(Integer codigoComanda, AdicionarPedidoCafeDTO dto) {
         log.info("Adicionando pedido café na comanda: comanda={}, itens={}",
                 codigoComanda, dto.getItens() != null ? dto.getItens().size() : 0);
 
