@@ -2,6 +2,7 @@ package com.oficinadafesta.pedido.domain;
 
 import com.oficinadafesta.cliente.domain.Cliente;
 import com.oficinadafesta.comanda.domain.Comanda;
+import com.oficinadafesta.enums.FormaPagamento;
 import com.oficinadafesta.enums.TipoEntrega;
 import com.oficinadafesta.pagamento.domain.Pagamento;
 import com.oficinadafesta.enums.StatusPedido;
@@ -41,14 +42,25 @@ public class Pedido {
     @Enumerated(EnumType.STRING)
     private TipoEntrega tipoEntrega;
 
+    @Enumerated(EnumType.STRING)
+    private FormaPagamento formaPagamento;
+
     @Column(precision = 10, scale = 2)
     private BigDecimal taxaEntrega = BigDecimal.ZERO;
+
+    @Column(precision = 10, scale = 2)
+    private BigDecimal valorPago = BigDecimal.ZERO;
+
+    @Column(precision = 10, scale = 2)
+    private BigDecimal valorTotal = BigDecimal.ZERO;
+
+    private boolean pagamentoConfirmado = false;
 
     @OneToMany(mappedBy = "pedido", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<ItemPedido> itens = new ArrayList<>();
 
     @ManyToOne
-    private Comanda comanda; // null para pedidos online
+    private Comanda comanda;
 
     @OneToMany(mappedBy = "pedido")
     private List<Pagamento> pagamentos = new ArrayList<>();
