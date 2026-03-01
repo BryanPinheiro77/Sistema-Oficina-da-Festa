@@ -162,7 +162,7 @@ public class PedidoController {
 
     @PreAuthorize(Roles.CAFE_CAIXA_ADMIN)
     @PostMapping("/cafe/comandas/{codigo}/adicionar")
-    public ResponseEntity<PedidoResumoDTO> adicionarPedidoCafe(@PathVariable String codigo,
+    public ResponseEntity<PedidoResumoDTO> adicionarPedidoCafe(@PathVariable Integer codigo,
                                                                @RequestBody AdicionarPedidoCafeDTO dto){
         PedidoResumoDTO resumo = pedidoService.adicionarPedidoCafe(codigo, dto);
         return ResponseEntity.ok(resumo);
