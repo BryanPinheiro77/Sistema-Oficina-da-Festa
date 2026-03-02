@@ -63,10 +63,10 @@ public class SecurityConfig {
                 )
 
                 // DeviceAuthFilter precisa rodar antes do JwtAuthFilter
-                .addFilterBefore(deviceAuthFilter, JwtAuthFilter.class)
+                .addFilterBefore(deviceAuthFilter, UsernamePasswordAuthenticationFilter.class)
 
                 // JWT antes do UsernamePasswordAuthenticationFilter
-                .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
+                .addFilterAfter(jwtAuthFilter, DeviceAuthFilter.class);
 
         return http.build();
     }
