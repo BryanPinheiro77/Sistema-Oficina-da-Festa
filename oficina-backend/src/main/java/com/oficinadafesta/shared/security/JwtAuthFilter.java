@@ -27,8 +27,6 @@ public class JwtAuthFilter extends OncePerRequestFilter {
 
     public JwtAuthFilter(JwtService jwtService) {
         this.jwtService = jwtService;
-        // Se você tiver problemas com LocalDateTime no JSON, usa:
-        // this.objectMapper.findAndRegisterModules();
         this.objectMapper.findAndRegisterModules();
     }
 
@@ -50,13 +48,20 @@ public class JwtAuthFilter extends OncePerRequestFilter {
                 String username = claims.getSubject();
                 String setor = claims.get("setor", String.class);
 
+                Object rawUserId = claims.get("userId");
+                Long userId = null;
+                if (rawUserId instanceof Number n) userId = n.longValue();
+                else if (rawUserId != null) userId = Long.parseLong(rawUserId.toString());
+
                 if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
                     var authorities = (setor == null)
                             ? List.<SimpleGrantedAuthority>of()
                             : List.of(new SimpleGrantedAuthority("ROLE_" + setor));
 
+                    LoggedUser principal = new LoggedUser(userId, username, setor);
+
                     var authentication = new UsernamePasswordAuthenticationToken(
-                            username,
+                            principal,
                             null,
                             authorities
                     );
@@ -65,7 +70,6 @@ public class JwtAuthFilter extends OncePerRequestFilter {
                 }
 
             } catch (Exception ex) {
-                // ✅ Token inválido/expirado -> 401 consistente em JSON
                 ErrorResponse body = new ErrorResponse(
                         LocalDateTime.now(),
                         401,
@@ -77,7 +81,7 @@ public class JwtAuthFilter extends OncePerRequestFilter {
                 response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
                 response.setContentType(MediaType.APPLICATION_JSON_VALUE);
                 objectMapper.writeValue(response.getWriter(), body);
-                return; // ✅ para aqui, não continua
+                return;
             }
         }
 
