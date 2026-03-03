@@ -9,6 +9,8 @@ import com.oficinadafesta.pedido.domain.Pedido;
 import com.oficinadafesta.pedido.dto.PedidoCaixaDTO;
 import com.oficinadafesta.pedido.dto.PedidoRequestDTO;
 import com.oficinadafesta.pedido.service.PedidoService;
+import com.oficinadafesta.shared.security.LoggedUser;
+import com.oficinadafesta.shared.security.SecurityUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -32,15 +34,21 @@ public class CaixaService {
 
     /** Pedido "normal" (ENTREGA/RETIRADA/IMEDIATA) criado no caixa */
     public Pedido criarPedidoNormal(PedidoRequestDTO dto) {
-        log.info("Caixa -> criando pedido normal: clienteId={}, tipoEntrega={}, formaPagamento={}",
-                dto.getClienteId(), dto.getTipoEntrega(), dto.getFormaPagamento());
+        LoggedUser ator = SecurityUtils.getLoggedUserOrNull();
+        log.info("Caixa -> criando pedido normal: clienteId={}, tipoEntrega={}, formaPagamento={} | ator=userId:{} setor:{}",
+                dto.getClienteId(), dto.getTipoEntrega(), dto.getFormaPagamento(),
+                ator != null ? ator.userId() : "anon",
+                ator != null ? ator.setor() : "anon");
         return pedidoService.criarPedido(dto);
     }
 
     /** Pedido de consumo local vinculado à comanda (fluxo caixa) */
     public void criarPedidoNaComanda(PedidoCaixaDTO dto) {
-        log.info("Caixa -> criando pedido na comanda: codigoComanda={}, formaPagamento={}, valorPago={}",
-                dto.getCodigoComanda(), dto.getFormaPagamento(), dto.getValorPago());
+        LoggedUser ator = SecurityUtils.getLoggedUserOrNull();
+        log.info("Caixa -> criando pedido na comanda: codigoComanda={}, formaPagamento={}, valorPago={} | ator=userId:{} setor:{}",
+                dto.getCodigoComanda(), dto.getFormaPagamento(), dto.getValorPago(),
+                ator != null ? ator.userId() : "anon",
+                ator != null ? ator.setor() : "anon");
         pedidoService.criarPedidoNoCaixa(dto);
     }
 
@@ -82,12 +90,20 @@ public class CaixaService {
     }
 
     public void pagarComanda(String codigo, PagamentoComandaDTO dto) {
-        log.info("Caixa -> pagar comanda: codigo={}", codigo);
+        LoggedUser ator = SecurityUtils.getLoggedUserOrNull();
+        log.info("Caixa -> pagar comanda: codigo={} | ator=userId:{} setor:{}",
+                codigo,
+                ator != null ? ator.userId() : "anon",
+                ator != null ? ator.setor() : "anon");
         comandaService.pagarComanda(codigo, dto);
     }
 
     public void fecharComanda(String codigo) {
-        log.info("Caixa -> fechar comanda: codigo={}", codigo);
+        LoggedUser ator = SecurityUtils.getLoggedUserOrNull();
+        log.info("Caixa -> fechar comanda: codigo={} | ator=userId:{} setor:{}",
+                codigo,
+                ator != null ? ator.userId() : "anon",
+                ator != null ? ator.setor() : "anon");
         comandaService.fecharComanda(codigo);
     }
 

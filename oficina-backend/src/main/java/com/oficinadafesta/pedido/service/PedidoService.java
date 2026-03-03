@@ -16,6 +16,7 @@ import com.oficinadafesta.pedido.repository.ItemPedidoRepository;
 import com.oficinadafesta.pedido.repository.PedidoRepository;
 import com.oficinadafesta.produto.domain.Produto;
 import com.oficinadafesta.produto.repository.ProdutoRepository;
+import com.oficinadafesta.shared.security.LoggedUser;
 import com.oficinadafesta.shared.security.SecurityUtils;
 import jakarta.persistence.EntityNotFoundException;
 import org.slf4j.Logger;
@@ -60,8 +61,11 @@ public class PedidoService {
     // =========================================================
 
     public Pedido criarPedido(PedidoRequestDTO dto) {
-        log.info("Criando pedido (cliente): clienteId={}, tipoEntrega={}, formaPagamento={}, distanciaKm={}",
-                dto.getClienteId(), dto.getTipoEntrega(), dto.getFormaPagamento(), dto.getDistanciaEntregaKm());
+        LoggedUser ator = SecurityUtils.getLoggedUserOrNull();
+        log.info("Criando pedido (cliente): clienteId={}, tipoEntrega={}, formaPagamento={}, distanciaKm={} | ator=userId:{} setor:{}",
+                dto.getClienteId(), dto.getTipoEntrega(), dto.getFormaPagamento(), dto.getDistanciaEntregaKm(),
+                ator != null ? ator.userId() : "anon",
+                ator != null ? ator.setor() : "anon");
 
         Cliente cliente = clienteRepository.findById(dto.getClienteId())
                 .orElseThrow(() -> new EntityNotFoundException("Cliente não encontrado com ID: " + dto.getClienteId()));
@@ -234,7 +238,11 @@ public class PedidoService {
     // =========================================================
 
     public Pedido atualizarStatus(Long pedidoId, StatusPedido novoStatus) {
-        log.info("Atualizando status do pedido: pedidoId={}, novoStatus={}", pedidoId, novoStatus);
+        LoggedUser ator = SecurityUtils.getLoggedUserOrNull();
+        log.info("Atualizando status do pedido: pedidoId={}, novoStatus={} | ator=userId:{} setor:{}",
+                pedidoId, novoStatus,
+                ator != null ? ator.userId() : "anon",
+                ator != null ? ator.setor() : "anon");
 
         Pedido pedido = pedidoRepository.findById(pedidoId)
                 .orElseThrow(() -> new EntityNotFoundException("Pedido não encontrado com ID: " + pedidoId));
@@ -249,7 +257,11 @@ public class PedidoService {
     }
 
     public Pedido confirmarPagamento(Long pedidoId, BigDecimal valorPago) {
-        log.info("Confirmando pagamento: pedidoId={}, valorPago={}", pedidoId, valorPago);
+        LoggedUser ator = SecurityUtils.getLoggedUserOrNull();
+        log.info("Confirmando pagamento: pedidoId={}, valorPago={} | ator=userId:{} setor:{}",
+                pedidoId, valorPago,
+                ator != null ? ator.userId() : "anon",
+                ator != null ? ator.setor() : "anon");
 
         Pedido pedido = pedidoRepository.findById(pedidoId)
                 .orElseThrow(() -> new EntityNotFoundException("Pedido não encontrado com ID: " + pedidoId));
@@ -272,7 +284,11 @@ public class PedidoService {
      * ADMIN pode tudo.
      */
     public void atualizarStatusItem(Long idItem, StatusItemPedido status) {
-        log.info("Atualizando status do item: itemId={}, novoStatus={}", idItem, status);
+        LoggedUser ator = SecurityUtils.getLoggedUserOrNull();
+        log.info("Atualizando status do item: itemId={}, novoStatus={} | ator=userId:{} setor:{}",
+                idItem, status,
+                ator != null ? ator.userId() : "anon",
+                ator != null ? ator.setor() : "anon");
 
         ItemPedido item = itemPedidoRepository.findById(idItem)
                 .orElseThrow(() -> new EntityNotFoundException("ItemPedido não encontrado: " + idItem));
@@ -352,9 +368,12 @@ public class PedidoService {
     // =========================================================
 
     public void criarPedidoNoCaixa(PedidoCaixaDTO dto) {
-        log.info("Criando pedido no caixa: comanda={}, formaPagamento={}, valorPago={}, itens={}",
+        LoggedUser ator = SecurityUtils.getLoggedUserOrNull();
+        log.info("Criando pedido no caixa: comanda={}, formaPagamento={}, valorPago={}, itens={} | ator=userId:{} setor:{}",
                 dto.getCodigoComanda(), dto.getFormaPagamento(), dto.getValorPago(),
-                dto.getItens() != null ? dto.getItens().size() : 0);
+                dto.getItens() != null ? dto.getItens().size() : 0,
+                ator != null ? ator.userId() : "anon",
+                ator != null ? ator.setor() : "anon");
 
         Comanda comanda = comandaRepository.findByCodigo(dto.getCodigoComanda())
                 .orElseThrow(() -> new EntityNotFoundException("Comanda não encontrada: " + dto.getCodigoComanda()));
@@ -412,8 +431,11 @@ public class PedidoService {
     // =========================================================
 
     public PedidoResumoDTO adicionarPedidoCafe(Integer codigoComanda, AdicionarPedidoCafeDTO dto) {
-        log.info("Adicionando pedido café na comanda: comanda={}, itens={}",
-                codigoComanda, dto.getItens() != null ? dto.getItens().size() : 0);
+        LoggedUser ator = SecurityUtils.getLoggedUserOrNull();
+        log.info("Adicionando pedido café na comanda: comanda={}, itens={} | ator=userId:{} setor:{}",
+                codigoComanda, dto.getItens() != null ? dto.getItens().size() : 0,
+                ator != null ? ator.userId() : "anon",
+                ator != null ? ator.setor() : "anon");
 
         Comanda comanda = comandaRepository.findByCodigo(codigoComanda)
                 .orElseThrow(() -> new EntityNotFoundException("Comanda não encontrada: " + codigoComanda));

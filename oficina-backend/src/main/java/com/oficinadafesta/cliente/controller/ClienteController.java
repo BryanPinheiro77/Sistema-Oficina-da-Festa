@@ -2,7 +2,9 @@ package com.oficinadafesta.cliente.controller;
 
 import com.oficinadafesta.cliente.domain.Cliente;
 import com.oficinadafesta.cliente.service.ClienteService;
+import com.oficinadafesta.shared.security.LoggedUser;
 import com.oficinadafesta.shared.security.Roles;
+import com.oficinadafesta.shared.security.SecurityUtils;
 import jakarta.validation.Valid;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -26,7 +28,11 @@ public class ClienteController {
     @PreAuthorize(Roles.CLIENTE_CRIAR)
     @PostMapping
     public ResponseEntity<Cliente> criar(@Valid @RequestBody Cliente cliente){
-        log.info("POST /clientes - criando cliente: nome={}, telefone={}", cliente.getNome(), cliente.getTelefone());
+        LoggedUser ator = SecurityUtils.getLoggedUserOrNull();
+        log.info("POST /clientes - criando cliente: nome={}, telefone={} | ator=userId:{} setor:{}",
+                cliente.getNome(), cliente.getTelefone(),
+                ator != null ? ator.userId() : "anon",
+                ator != null ? ator.setor() : "anon");
         Cliente salvo = clienteService.salvar(cliente);
         log.info("Cliente criado: id={}, nome={}", salvo.getId(), salvo.getNome());
         return ResponseEntity.status(HttpStatus.CREATED).body(salvo);

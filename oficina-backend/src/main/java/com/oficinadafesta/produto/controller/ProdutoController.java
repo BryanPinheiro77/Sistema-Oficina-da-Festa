@@ -38,6 +38,22 @@ public class ProdutoController {
         return ResponseEntity.status(HttpStatus.CREATED).body(salvo);
     }
 
+    @PreAuthorize(Roles.SOMENTE_ADMIN)
+    @PutMapping("/{id}")
+    public ResponseEntity<Produto> editar(@PathVariable Long id, @Valid @RequestBody ProdutoCreateDTO dto) {
+        log.info("PUT /produtos/{} - editando produto", id);
+        Produto salvo = produtoService.editar(id, dto);
+        return ResponseEntity.ok(salvo);
+    }
+
+    @PreAuthorize(Roles.SOMENTE_ADMIN)
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> excluir(@PathVariable Long id) {
+        log.info("DELETE /produtos/{} - excluindo produto", id);
+        produtoService.excluir(id);
+        return ResponseEntity.noContent().build();
+    }
+
     @PreAuthorize(Roles.TODOS_SETORES)
     @GetMapping
     public ResponseEntity<List<Produto>> listarTodos() {

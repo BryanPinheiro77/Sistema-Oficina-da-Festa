@@ -30,19 +30,32 @@ public class CategoriaProdutoController {
     public ResponseEntity<CategoriaProduto> criar(@Valid @RequestBody CategoriaProduto categoria) {
         log.info("POST /categorias-produto - criando categoria: nome={}, setor={}",
                 categoria.getNome(), categoria.getSetor());
-
         CategoriaProduto salva = categoriaProdutoService.salvar(categoria);
-
         log.info("Categoria criada: id={}, nome={}", salva.getId(), salva.getNome());
         return ResponseEntity.status(HttpStatus.CREATED).body(salva);
+    }
+
+    @PreAuthorize(Roles.SOMENTE_ADMIN)
+    @PutMapping("/{id}")
+    public ResponseEntity<CategoriaProduto> editar(@PathVariable Long id,
+                                                   @Valid @RequestBody CategoriaProduto dto) {
+        log.info("PUT /categorias-produto/{} - editando categoria", id);
+        CategoriaProduto salva = categoriaProdutoService.editar(id, dto);
+        return ResponseEntity.ok(salva);
+    }
+
+    @PreAuthorize(Roles.SOMENTE_ADMIN)
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> excluir(@PathVariable Long id) {
+        log.info("DELETE /categorias-produto/{} - excluindo categoria", id);
+        categoriaProdutoService.excluir(id);
+        return ResponseEntity.noContent().build();
     }
 
     @PreAuthorize(Roles.TODOS_SETORES)
     @GetMapping
     public ResponseEntity<List<CategoriaProduto>> listarTodas() {
         log.debug("GET /categorias-produto - listando categorias");
-        List<CategoriaProduto> categorias = categoriaProdutoService.listarTodas();
-        log.debug("GET /categorias-produto - total={}", categorias.size());
-        return ResponseEntity.ok(categorias);
+        return ResponseEntity.ok(categoriaProdutoService.listarTodas());
     }
 }
