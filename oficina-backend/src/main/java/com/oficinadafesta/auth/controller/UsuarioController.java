@@ -23,7 +23,7 @@ public class UsuarioController {
         this.usuarioService = usuarioService;
     }
 
-    @PostMapping
+    @PostMapping("/criar")
     public ResponseEntity<UsuarioResponseDTO> criar(@Valid @RequestBody CriarUsuarioDTO dto) {
         return ResponseEntity.ok(usuarioService.criarUsuario(dto));
     }

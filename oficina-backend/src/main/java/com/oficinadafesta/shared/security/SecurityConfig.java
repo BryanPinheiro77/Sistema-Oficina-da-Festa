@@ -49,9 +49,6 @@ public class SecurityConfig {
                         // públicas
                         .requestMatchers(HttpMethod.POST, "/auth/login").permitAll()
 
-                        // TEMP: liberar criação (bootstrap)
-                        .requestMatchers(HttpMethod.POST, "/admin/usuarios/criar").permitAll()
-
                         // swagger
                         .requestMatchers("/swagger-ui/**", "/v3/api-docs/**").permitAll()
 
