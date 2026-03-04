@@ -1,9 +1,8 @@
 package com.oficinadafesta.pagamento.domain;
 
-
 import com.oficinadafesta.comanda.domain.Comanda;
-import com.oficinadafesta.pedido.domain.Pedido;
 import com.oficinadafesta.enums.FormaPagamento;
+import com.oficinadafesta.pedido.domain.Pedido;
 
 import jakarta.persistence.*;
 import lombok.*;
@@ -11,15 +10,11 @@ import lombok.*;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
-
 @Entity
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-
-
-
 public class Pagamento {
 
     @Id
@@ -32,6 +27,9 @@ public class Pagamento {
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private FormaPagamento formaPagamento;
+
+    @Column(precision = 10, scale = 2)
+    private BigDecimal troco;
 
     @Column(nullable = false)
     private LocalDateTime pagoEm = LocalDateTime.now();
@@ -46,6 +44,7 @@ public class Pagamento {
 
     @PrePersist
     public void validarVinculo() {
+        if (pagoEm == null) pagoEm = LocalDateTime.now();
         if ((pedido == null && comanda == null) ||
                 (pedido != null && comanda != null)) {
             throw new IllegalStateException(
