@@ -18,8 +18,6 @@ public class PedidoRequestDTO {
 
     private boolean paraEntrega;
     private String enderecoEntrega;
-    private BigDecimal taxaEntrega;
-    private double distanciaEntregaKm;
 
     private LocalDateTime dataRetirada;
     private String horaRetirada;

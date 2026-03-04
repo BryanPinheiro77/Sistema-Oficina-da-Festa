@@ -4,6 +4,7 @@ import com.oficinadafesta.cliente.domain.Cliente;
 import com.oficinadafesta.cliente.repository.ClienteRepository;
 import com.oficinadafesta.comanda.domain.Comanda;
 import com.oficinadafesta.comanda.repository.ComandaRepository;
+import com.oficinadafesta.delivery.service.DeliveryFeeService;
 import com.oficinadafesta.enums.AreaTipo;
 import com.oficinadafesta.enums.FormaPagamento;
 import com.oficinadafesta.enums.StatusItemPedido;
@@ -44,16 +45,20 @@ public class PedidoService {
     private final ItemPedidoRepository itemPedidoRepository;
     private final ComandaRepository comandaRepository;
 
+    private final DeliveryFeeService deliveryFeeService;
+
     public PedidoService(PedidoRepository pedidoRepository,
                          ProdutoRepository produtoRepository,
                          ClienteRepository clienteRepository,
                          ItemPedidoRepository itemPedidoRepository,
-                         ComandaRepository comandaRepository) {
+                         ComandaRepository comandaRepository,
+                         DeliveryFeeService deliveryFeeService) {
         this.pedidoRepository = pedidoRepository;
         this.produtoRepository = produtoRepository;
         this.clienteRepository = clienteRepository;
         this.itemPedidoRepository = itemPedidoRepository;
         this.comandaRepository = comandaRepository;
+        this.deliveryFeeService = deliveryFeeService;
     }
 
     // =========================================================
@@ -63,7 +68,7 @@ public class PedidoService {
     public Pedido criarPedido(PedidoRequestDTO dto) {
         LoggedUser ator = SecurityUtils.getLoggedUserOrNull();
         log.info("Criando pedido (cliente): clienteId={}, tipoEntrega={}, formaPagamento={}, distanciaKm={} | ator=userId:{} setor:{}",
-                dto.getClienteId(), dto.getTipoEntrega(), dto.getFormaPagamento(), dto.getDistanciaEntregaKm(),
+                dto.getClienteId(), dto.getTipoEntrega(), dto.getFormaPagamento(), dto.getEnderecoEntrega(),
                 ator != null ? ator.userId() : "anon",
                 ator != null ? ator.setor() : "anon");
 
@@ -87,8 +92,9 @@ public class PedidoService {
 
         // taxa só faz sentido se for ENTREGA
         BigDecimal taxaEntrega = (dto.getTipoEntrega() == TipoEntrega.ENTREGA)
-                ? calcularTaxaEntregaPorDistancia(dto.getDistanciaEntregaKm())
+                ? deliveryFeeService.calcularTaxa(dto.getEnderecoEntrega())
                 : BigDecimal.ZERO;
+
         pedido.setTaxaEntrega(taxaEntrega);
 
         pedido.setFormaPagamento(dto.getFormaPagamento());
@@ -140,13 +146,6 @@ public class PedidoService {
         }
         // ENTREGA → pagamento total (regra atual)
         return total;
-    }
-
-    private BigDecimal calcularTaxaEntregaPorDistancia(double distanciaKm) {
-        if (distanciaKm <= 1.0) return BigDecimal.valueOf(5.00);
-        if (distanciaKm <= 2.0) return BigDecimal.valueOf(7.50);
-        if (distanciaKm <= 3.0) return BigDecimal.valueOf(10.00);
-        return BigDecimal.valueOf(10.00 + (distanciaKm - 3.0) * 2.50);
     }
 
     // =========================================================
