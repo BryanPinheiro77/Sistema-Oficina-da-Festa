@@ -6,11 +6,11 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 public record PagamentoResponseDTO(
-
         Long id,
         BigDecimal valor,
         FormaPagamento formaPagamento,
         LocalDateTime pagoEm,
+        BigDecimal troco,
         Long pedidoId,
         Long comandaId
 ) {}

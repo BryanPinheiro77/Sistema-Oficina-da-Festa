@@ -15,6 +15,9 @@ public record PagamentoRequestDTO(
         @NotNull
         FormaPagamento formaPagamento,
 
+        // usado para calcular troco quando formaPagamento = DINHEIRO
+        BigDecimal valorRecebido,
+
         Long pedidoId,
         Long comandaId
 ) {}
