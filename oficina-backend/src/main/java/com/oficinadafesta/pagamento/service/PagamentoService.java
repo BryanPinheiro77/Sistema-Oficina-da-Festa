@@ -93,8 +93,16 @@ public class PagamentoService {
     }
     @Transactional
     public PagamentoResponseDTO buscarPorId(Long id) {
+        log.info("Buscando pagamento: id={}", id);
+
         Pagamento pagamento = pagamentoRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Pagamento não encontrado."));
+                .orElseThrow(() -> {
+                    log.warn("Pagamento não encontrado: id={}", id);
+                    return new RuntimeException("Pagamento não encontrado.");
+                });
+
+        log.info("Pagamento encontrado: id={}, valor={}, forma={}",
+                pagamento.getId(), pagamento.getValor(), pagamento.getFormaPagamento());
 
         return new PagamentoResponseDTO(
                 pagamento.getId(),
@@ -109,7 +117,9 @@ public class PagamentoService {
 
     @Transactional
     public List<PagamentoResponseDTO> listarTodos() {
-        return pagamentoRepository.findAll()
+        log.info("Listando todos os pagamentos");
+
+        List<PagamentoResponseDTO> lista = pagamentoRepository.findAll()
                 .stream()
                 .map(p -> new PagamentoResponseDTO(
                         p.getId(),
@@ -121,5 +131,7 @@ public class PagamentoService {
                         p.getComanda() != null ? p.getComanda().getId() : null
                 ))
                 .toList();
+
+        log.info("Total de pagamentos retornados: {}", lista.size());
+        return lista;
     }
-}
